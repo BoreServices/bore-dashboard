@@ -209,4 +209,22 @@ describe('dashboard', () => {
     await waitFor(() => expect(input).toBeDisabled())
     expect(screen.getByText(/Manage Messages permission/)).toBeInTheDocument()
   })
+  it('renders every dashboard route with the stored configuration', async () => {
+    const routes: [string, string][] = [
+      ['/dashboard/general', 'General'],
+      ['/dashboard/welcome', 'Welcome messages'],
+      ['/dashboard/leave', 'Leave messages'],
+      ['/dashboard/boost', 'Boost messages'],
+      ['/dashboard/autoroles', 'Auto roles'],
+      ['/dashboard/aliases', 'Aliases'],
+      ['/dashboard/antinuke', 'Anti-nuke'],
+      ['/dashboard/honeypot', 'Honeypots'],
+    ]
+
+    for (const [route, heading] of routes) {
+      const view = renderApp(route)
+      expect(await screen.findByRole('heading', { name: heading }), route).toBeInTheDocument()
+      view.unmount()
+    }
+  })
 })
