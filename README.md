@@ -29,7 +29,7 @@ credentials in the browser bundle.
 - Node.js 20+ (Node 22 recommended) and npm 10+
 - A running instance of the **bot API** (the Flask service in the bot's `main.py`)
 - A Discord application (for OAuth2) if you want the sign-in flow
-- The bot's PostgreSQL database, if you want the dashboard to show a guild's prefix
+- The bot's PostgreSQL database — the dashboard reads and writes the bot's own tables
 
 ## 2. Install
 
@@ -150,17 +150,23 @@ instead of pretending to sign anyone in.
 
 ## 6. Database access
 
-The website reads the bot's existing PostgreSQL database server-side only:
+The website reads and writes the bot's existing PostgreSQL tables, server-side only:
 
-```sql
-SELECT prefix FROM prefix WHERE guild_id = $1
-```
+| Table                                            | What the dashboard does with it                       |
+| ------------------------------------------------ | ---------------------------------------------------- |
+| `prefix`                                         | The command prefix                                    |
+| `welcome`, `leave`, `boost`                      | The message sent for each event, per channel          |
+| `autorole`                                       | The roles given to new members                        |
+| `aliases`                                        | Command shortcuts                                     |
+| `antinuke_guild`, `antinuke_settings`            | Anti-nuke state, action window, thresholds, punishments |
+| `honeypots`, `honeypot_settings`                 | Bait channels, staff exemption, jail role, log channel |
 
-This is the same table the bot uses for per-guild prefixes (`base/schema/schema.sql`).
-Queries are parameterised, the pool is limited to a single connection per function
-instance (appropriate for serverless), and the connection string never leaves the
-server. No migration is required — the table already exists. If `DATABASE_URL` is not
-set, the dashboard says the database is not configured instead of guessing a prefix.
+Every statement is parameterised, the pool is limited to a single connection per function
+instance (appropriate for serverless), and the connection string never leaves the server.
+No table is created or altered by this project — it uses the schema the bot already defines
+in `base/schema/schema.sql`, so a change made in the dashboard is picked up by the bot the
+next time it reads the table. If `DATABASE_URL` is not set, the dashboard says the database
+is not configured instead of guessing a value.
 
 ## 7. Deploy to Vercel
 
@@ -270,6 +276,8 @@ roles, fake permissions) is deliberately left out rather than faked.
    needs. `ADMINISTRATOR` implies the rest.
 4. Channels and roles are validated against the guild's own channel and role lists before
    they are saved.
+5. A role the bot could not hand out anyway — one at or above the bot's own role, or one
+   managed by an integration — is refused server-side, and hidden from the picker.
 
 **Schema note — the `aliases` table**
 
@@ -346,10 +354,11 @@ responsive navigation and the error states.
 
 | Item                                          | Status                                                                    |
 | --------------------------------------------- | ------------------------------------------------------------------------- |
-| Bot API authentication                         | **Backend change needed** — the Flask service accepts any caller           |
+| Anti-raid configuration                        | **Not exposed** — the bot's `antiraid` module has its own tables and no safe dashboard surface yet |
+| Moderation log history                         | **Not exposed** — the bot stores no moderation log, so there is nothing to read |
+| Warnings                                      | **Not exposed** — the `warnings` table exists but the bot never writes to it |
 | Socket.IO push updates for `/status`           | Supported by the bot API, not wired up — polling is used instead           |
 | Message sending from the embed builder         | **Backend change needed** — no send endpoint exists in the bot API         |
-| Dashboard configuration (moderation, logs, …)  | Not started — the dashboard shows real read-only data and marks the rest as upcoming |
 | Discord member counts                          | Only available with the `guilds.members.read` scope, which is not requested |
 | Rate limiting across serverless instances      | Per-instance only — use a shared store if stricter limits are required      |
 

@@ -126,12 +126,17 @@ export default withRateLimit('dashboard_config_write', 60, 60_000, async (req, r
       case 'autoroles': {
         const parsed = parseOrFail(res, autoroleBodySchema, body)
         if (!parsed) return
-        const { roles } = await loadGuildRoles(guildId)
+        const { roles, botRolePosition } = await loadGuildRoles(guildId)
         const role = roles.find((entry) => entry.id === parsed.roleId)
         if (!role) throw new InvalidRequestError('That role is not in this server.')
         if (parsed.action === 'add' && role.managed) {
           throw new InvalidRequestError(
             'Roles managed by an integration cannot be used as autoroles.',
+          )
+        }
+        if (parsed.action === 'add' && (role.position ?? 0) >= botRolePosition) {
+          throw new InvalidRequestError(
+            'Bore cannot hand out a role that sits at or above its own role.',
           )
         }
         await writeAutoroleConfig(guildId, parsed.roleId, parsed.action === 'add')
@@ -177,7 +182,7 @@ export default withRateLimit('dashboard_config_write', 60, 60_000, async (req, r
       case 'honeypot': {
         const parsed = parseOrFail(res, honeypotBodySchema, body)
         if (!parsed) return
-        const [{ roles }, channels] = await Promise.all([
+        const [{ roles, botRolePosition }, channels] = await Promise.all([
           loadGuildRoles(guildId),
           loadGuildChannels(guildId),
         ])
@@ -189,6 +194,12 @@ export default withRateLimit('dashboard_config_write', 60, 60_000, async (req, r
         if (parsed.jailRoleId === guildId) {
           throw new InvalidRequestError(
             'The @everyone role cannot be used as the jail role.',
+          )
+        }
+        const jailRole = roles.find((role) => role.id === parsed.jailRoleId)
+        if (jailRole && (jailRole.position ?? 0) >= botRolePosition) {
+          throw new InvalidRequestError(
+            'The jail role has to sit below Bore\'s own role, or Discord refuses to hand it out.',
           )
         }
         if (
