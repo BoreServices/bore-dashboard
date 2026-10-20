@@ -53,6 +53,7 @@ Vercel project settings. `.env*` files are git-ignored.
 | Variable                | Scope   | Purpose                                                                |
 | ----------------------- | ------- | ---------------------------------------------------------------------- |
 | `BOT_API_BASE_URL`      | server  | Base URL of the bot's Flask API (e.g. `https://bore-api.example.com`)   |
+| `BOT_API_KEY`           | server  | Shared secret sent as `X-API-Key` when the bot API requires one         |
 | `DISCORD_CLIENT_ID`     | server  | Discord application id (public, but used server-side only)              |
 | `DISCORD_CLIENT_SECRET` | server  | Discord application secret — never sent to the browser                  |
 | `DISCORD_REDIRECT_URI`  | server  | Must be `<site>/api/auth/callback`                                      |
@@ -85,12 +86,12 @@ browser calls same-origin `/api/*` routes on Vercel, and those functions proxy t
 If `BOT_API_BASE_URL` is missing or the service is down, the site shows an honest
 “service unavailable” state. It never invents statistics.
 
-**Security note:** the Flask API in the bot source has no authentication and enables
-CORS for every origin. The proxy in this repository only ever requests the four
-documented routes, so it is not an open proxy, but adding a shared secret (or putting the
-API behind the same network/VPN) is a recommended backend change. No `BOT_API_KEY` is
-implemented here because the existing service does not validate one — adding it means
-changing the Python service first.
+**Security note:** the Flask API is reachable over the internet, so it is protected with a
+shared secret. The bot reads `API_KEY` (or the file named by `API_KEY_FILE`) and rejects
+requests that do not carry a matching `X-API-Key` header; `/` and `/healthz` stay open. The
+proxy here sends `BOT_API_KEY` when it is set, and only ever requests the four documented
+routes, so it is not an open proxy. CORS on the bot is limited to `ALLOWED_ORIGINS` (unset
+by default) because the website reads the API through its own server-side functions.
 
 The bot API also emits `status_update` Socket.IO events every ten seconds. The status
 page currently polls `/status` every twelve seconds, which is reliable without extra

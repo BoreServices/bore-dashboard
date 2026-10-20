@@ -80,11 +80,15 @@ export async function fetchBotApi<T>(
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
+  const apiKey = env('BOT_API_KEY')
+  const headers: Record<string, string> = { accept: 'application/json' }
+  if (apiKey) headers['X-API-Key'] = apiKey
+
   let response: Response
   try {
     response = await fetch(`${base}${path}`, {
       signal: controller.signal,
-      headers: { accept: 'application/json' },
+      headers,
     })
   } catch (error) {
     const aborted = controller.signal.aborted
@@ -100,6 +104,13 @@ export async function fetchBotApi<T>(
   }
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new BotApiError(
+        'bot_api_unauthorized',
+        'The bot API rejected the configured API key.',
+        502,
+      )
+    }
     throw new BotApiError(
       'bot_api_error',
       `The bot API responded with ${response.status}.`,
