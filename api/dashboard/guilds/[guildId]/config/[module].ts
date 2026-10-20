@@ -126,7 +126,7 @@ export default withRateLimit('dashboard_config_write', 60, 60_000, async (req, r
       case 'autoroles': {
         const parsed = parseOrFail(res, autoroleBodySchema, body)
         if (!parsed) return
-        const roles = await loadGuildRoles(guildId)
+        const { roles } = await loadGuildRoles(guildId)
         const role = roles.find((entry) => entry.id === parsed.roleId)
         if (!role) throw new InvalidRequestError('That role is not in this server.')
         if (parsed.action === 'add' && role.managed) {
@@ -177,7 +177,7 @@ export default withRateLimit('dashboard_config_write', 60, 60_000, async (req, r
       case 'honeypot': {
         const parsed = parseOrFail(res, honeypotBodySchema, body)
         if (!parsed) return
-        const [roles, channels] = await Promise.all([
+        const [{ roles }, channels] = await Promise.all([
           loadGuildRoles(guildId),
           loadGuildChannels(guildId),
         ])

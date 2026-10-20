@@ -44,6 +44,7 @@ export function RoleSelect({
   allowNone = true,
   noneLabel = 'Not set',
   excludeManaged = true,
+  requireAssignable = false,
 }: {
   value: string | null
   onChange: (roleId: string | null) => void
@@ -52,9 +53,19 @@ export function RoleSelect({
   allowNone?: boolean
   noneLabel?: string
   excludeManaged?: boolean
+  /** Hide the roles Discord would refuse to let the bot assign. */
+  requireAssignable?: boolean
 }) {
-  const { roles, rolesPending } = useDashboard()
-  const visible = excludeManaged ? roles.filter((role) => !role.managed) : roles
+  const { roles, rolesPending, botRolePosition, selectedGuild } = useDashboard()
+
+  const visible = roles.filter((role) => {
+    if (excludeManaged && role.managed) return false
+    // Discord refuses to let a bot hand out a role at or above its own.
+    if (requireAssignable && role.position >= botRolePosition) return false
+    // The @everyone role is not something anybody can be given.
+    if (role.id === selectedGuild?.id) return false
+    return true
+  })
 
   return (
     <select

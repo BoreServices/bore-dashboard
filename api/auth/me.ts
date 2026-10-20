@@ -21,5 +21,6 @@ export default withRateLimit('auth_me', 120, 60_000, async (req, res) => {
   sendJson(res, 200, {
     user: session.user,
     guildsAvailable,
+    expiresAt: new Date(session.exp * 1000).toISOString(),
   })
 })

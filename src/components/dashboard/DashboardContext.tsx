@@ -25,6 +25,8 @@ type DashboardContextValue = {
   channelsPending: boolean
   roles: DashboardRole[]
   rolesPending: boolean
+  /** The highest role the bot holds; roles at or above it cannot be assigned. */
+  botRolePosition: number
 }
 
 const DashboardContext = createContext<DashboardContextValue | null>(null)
@@ -78,6 +80,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       channelsPending: channelsQuery.isPending,
       roles: rolesQuery.data?.roles ?? [],
       rolesPending: rolesQuery.isPending,
+      botRolePosition: rolesQuery.data?.botRolePosition ?? Number.MAX_SAFE_INTEGER,
     }),
     [
       guilds,

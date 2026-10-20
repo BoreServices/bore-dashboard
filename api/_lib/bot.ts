@@ -55,7 +55,11 @@ export const botRoleSchema = z.object({
   mentionable: z.boolean().optional(),
 })
 
-export const botRolesSchema = z.object({ roles: z.array(botRoleSchema) })
+export const botRolesSchema = z.object({
+  roles: z.array(botRoleSchema),
+  /** The highest role the bot holds; roles at or above it cannot be assigned. */
+  bot_role_position: z.number(),
+})
 
 export type BotChannel = z.infer<typeof botChannelSchema>
 export type BotRole = z.infer<typeof botRoleSchema>
@@ -232,13 +236,15 @@ export async function fetchBotGuildChannels(guildId: string): Promise<BotChannel
   }
 }
 
-export async function fetchBotGuildRoles(guildId: string): Promise<BotRole[]> {
+export async function fetchBotGuildRoles(guildId: string): Promise<{
+  roles: BotRole[]
+  bot_role_position: number
+}> {
   try {
-    const payload = await fetchBotApi(
+    return await fetchBotApi(
       `/guilds/${encodeURIComponent(guildId)}/roles`,
       botRolesSchema,
     )
-    return payload.roles
   } catch (error) {
     if (error instanceof BotApiError && error.status === 404) throw new BotNotInGuildError()
     throw error

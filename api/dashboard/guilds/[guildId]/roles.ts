@@ -22,7 +22,7 @@ export default withRateLimit('dashboard_roles', 120, 60_000, async (req, res) =>
   if (!access) return
 
   try {
-    const roles = await loadGuildRoles(guildId)
+    const { roles, botRolePosition } = await loadGuildRoles(guildId)
     const list = roles.map((role) => ({
       id: role.id,
       name: role.name,
@@ -32,7 +32,7 @@ export default withRateLimit('dashboard_roles', 120, 60_000, async (req, res) =>
       mentionable: role.mentionable ?? false,
     }))
 
-    sendJson(res, 200, { roles: list })
+    sendJson(res, 200, { roles: list, botRolePosition })
   } catch (error) {
     sendUpstreamError(res, error)
   }

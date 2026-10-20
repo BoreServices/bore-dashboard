@@ -64,6 +64,7 @@ Vercel project settings. `.env*` files are git-ignored.
 | ----------------------- | ------- | ---------------------------------------------------------------------- |
 | `BOT_API_BASE_URL`      | server  | Base URL of the bot's Flask API (e.g. `https://bore-api.example.com`)   |
 | `BOT_API_KEY`           | server  | Shared secret sent as `X-API-Key` when the bot API requires one         |
+| `BOT_CLIENT_ID`         | server  | The bot's own Discord application id, for per-server install links       |
 | `DISCORD_CLIENT_ID`     | server  | Discord application id (public, but used server-side only)              |
 | `DISCORD_CLIENT_SECRET` | server  | Discord application secret — never sent to the browser                  |
 | `DISCORD_REDIRECT_URI`  | server  | Must be `<site>/api/auth/callback`                                      |

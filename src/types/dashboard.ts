@@ -40,6 +40,8 @@ export const roleSchema = z.object({
 
 export const rolesResponseSchema = z.object({
   roles: z.array(roleSchema),
+  /** The highest role the bot holds; roles at or above it cannot be assigned. */
+  botRolePosition: z.number(),
 })
 
 export const messageEntrySchema = z.object({

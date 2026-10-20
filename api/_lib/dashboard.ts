@@ -305,14 +305,18 @@ export async function loadGuildChannels(guildId: string): Promise<BotChannel[]> 
   return fetchBotGuildChannels(guildId)
 }
 
-export async function loadGuildRoles(guildId: string): Promise<BotRole[]> {
-  return fetchBotGuildRoles(guildId)
+export async function loadGuildRoles(guildId: string): Promise<{
+  roles: BotRole[]
+  botRolePosition: number
+}> {
+  const payload = await fetchBotGuildRoles(guildId)
+  return { roles: payload.roles, botRolePosition: payload.bot_role_position }
 }
 
 /** The same lists, but tolerant of a server the bot is not installed in. */
 export async function readGuildDirectory(guildId: string): Promise<GuildDirectory> {
   try {
-    const [channels, roles] = await Promise.all([
+    const [channels, { roles }] = await Promise.all([
       loadGuildChannels(guildId),
       loadGuildRoles(guildId),
     ])

@@ -14,12 +14,15 @@ import { env } from './env.js'
 export const BOT_PERMISSIONS = 268528646
 
 /**
- * A Discord installation link built from the configured application id.
- * Returns null when the OAuth application is not configured, so the caller
- * can fall back to a generic invite instead of linking to a broken url.
+ * A Discord installation link built from the bot's own application id.
+ *
+ * `BOT_CLIENT_ID` has to be the application the *bot* was created under — the
+ * website's OAuth application id is a different thing and cannot be installed
+ * as a bot. Returns null when it is not configured, so the caller falls back to
+ * the plain invite link instead of linking to something broken.
  */
 export function buildBotInviteUrl(guildId?: string): string | null {
-  const clientId = env('DISCORD_CLIENT_ID')
+  const clientId = env('BOT_CLIENT_ID')
   if (!clientId) return null
 
   const params = new URLSearchParams({

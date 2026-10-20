@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { ModuleHeader, ModuleSkeleton, SaveBar, useUnsavedChanges } from '../../components/dashboard/ModuleHeader'
 import { useDashboard } from '../../components/dashboard/DashboardContext'
 import { ChannelSelect } from '../../components/dashboard/Pickers'
 import { useModuleMutation } from '../../lib/dashboard'
 import { Input, Select, SettingRow, Switch } from '../../components/ui/Field'
+import { Button } from '../../components/ui/Button'
 import { Table, Td, Th, Tr } from '../../components/ui/Table'
 import { EmptyState, ErrorState, Notice } from '../../components/ui/States'
 import { usePageMeta } from '../../lib/usePageMeta'
@@ -24,6 +26,9 @@ const MODULE_LABELS: Record<string, string> = {
   vanity: 'Vanity URL changes',
   guild: 'Server rename',
 }
+
+/** Every module the cog knows, in the order the bot lists them. */
+const ALL_MODULES = Object.keys(MODULE_LABELS)
 
 /** The bot punishes these on the first action, so the threshold is fixed. */
 const INSTANT_MODULES = new Set(['botadd', 'prune', 'vanity', 'guild'])
@@ -51,6 +56,11 @@ export function AntiNukePage() {
   const [logChannelId, setLogChannelId] = useState<string | null>(null)
   const [windowSeconds, setWindowSeconds] = useState(10)
   const [modules, setModules] = useState<ModuleState[]>([])
+  /** Modules that were armed and are being disarmed by this edit. */
+  const [disarmed, setDisarmed] = useState<string[]>([])
+  const [newModule, setNewModule] = useState('')
+  const [newPunishment, setNewPunishment] = useState('ban')
+  const [newThreshold, setNewThreshold] = useState(3)
 
   useEffect(() => {
     if (!config) return
@@ -58,6 +68,7 @@ export function AntiNukePage() {
     setLogChannelId(config.antinuke.logChannelId)
     setWindowSeconds(config.antinuke.windowSeconds)
     setModules(config.antinuke.modules.map((entry) => ({ ...entry })))
+    setDisarmed([])
   }, [config])
 
   const baseline = config
@@ -76,7 +87,7 @@ export function AntiNukePage() {
     modules,
   })
 
-  const dirty = current !== baseline
+  const dirty = current !== baseline || disarmed.length > 0
   useUnsavedChanges(dirty)
 
   if (configPending) return <ModuleSkeleton />
@@ -101,6 +112,21 @@ export function AntiNukePage() {
     )
   }
 
+  const disarmModule = (module: string) => {
+    setModules((current) => current.filter((entry) => entry.module !== module))
+    setDisarmed((current) => (current.includes(module) ? current : [...current, module]))
+  }
+
+  const armModule = () => {
+    if (!newModule) return
+    setModules((current) => [
+      ...current,
+      { module: newModule, punishment: newPunishment, threshold: newThreshold },
+    ])
+    setDisarmed((current) => current.filter((entry) => entry !== newModule))
+    setNewModule('')
+  }
+
   const save = async () => {
     try {
       await mutation.mutateAsync({
@@ -109,11 +135,14 @@ export function AntiNukePage() {
           enabled,
           logChannelId,
           windowSeconds,
-          modules: modules.map((entry) => ({
-            module: entry.module,
-            punishment: entry.punishment,
-            threshold: INSTANT_MODULES.has(entry.module) ? 1 : entry.threshold,
-          })),
+          modules: [
+            ...modules.map((entry) => ({
+              module: entry.module,
+              punishment: entry.punishment,
+              threshold: INSTANT_MODULES.has(entry.module) ? 1 : entry.threshold,
+            })),
+            ...disarmed.map((module) => ({ module, enabled: false as const })),
+          ],
         },
       })
       toast.success('Anti-nuke settings saved')
@@ -127,7 +156,12 @@ export function AntiNukePage() {
     setLogChannelId(config.antinuke.logChannelId)
     setWindowSeconds(config.antinuke.windowSeconds)
     setModules(config.antinuke.modules.map((entry) => ({ ...entry })))
+    setDisarmed([])
   }
+
+  const available = ALL_MODULES.filter(
+    (module) => !modules.some((entry) => entry.module === module),
+  )
 
   return (
     <div className="max-w-3xl">
@@ -196,6 +230,7 @@ export function AntiNukePage() {
                 <Th>action</Th>
                 <Th className="w-56">punishment</Th>
                 <Th className="w-28 text-right">threshold</Th>
+                <Th className="w-12" />
               </tr>
             </thead>
             <tbody>
@@ -236,16 +271,71 @@ export function AntiNukePage() {
                       />
                     )}
                   </Td>
+                  <Td>
+                    <button
+                      type="button"
+                      onClick={() => disarmModule(entry.module)}
+                      aria-label={`Disarm ${entry.module}`}
+                      className="rounded p-1.5 text-ink-muted transition-colors hover:bg-danger/5 hover:text-danger"
+                    >
+                      <Trash2 className="h-3 w-3" aria-hidden />
+                    </button>
+                  </Td>
                 </Tr>
               ))}
             </tbody>
           </Table>
         ) : (
           <EmptyState
-            title="No modules configured"
-            description="This server has no anti-nuke modules armed. The bot applies its defaults until a module is configured here."
+            title="No modules armed"
+            description="A module with no row in the bot's table is never triggered. Arm one below to start protecting this server."
           />
         )}
+
+        <div className="flex flex-wrap items-end gap-2 border-t border-line px-3.5 py-3.5">
+          <div className="w-full max-w-[14rem] space-y-1.5">
+            <Select
+              label="Action"
+              value={newModule}
+              onChange={(event) => setNewModule(event.target.value)}
+            >
+              <option value="">Choose an action…</option>
+              {available.map((module) => (
+                <option key={module} value={module}>
+                  {MODULE_LABELS[module]}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="w-full max-w-[12rem] space-y-1.5">
+            <Select
+              label="Punishment"
+              value={newPunishment}
+              onChange={(event) => setNewPunishment(event.target.value)}
+            >
+              {PUNISHMENTS.map((punishment) => (
+                <option key={punishment.value} value={punishment.value}>
+                  {punishment.label}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="w-24 space-y-1.5">
+            <Input
+              label="Threshold"
+              type="number"
+              min={1}
+              max={25}
+              value={newThreshold}
+              onChange={(event) => setNewThreshold(Number(event.target.value))}
+              className="font-mono"
+            />
+          </div>
+          <Button variant="secondary" size="md" onClick={armModule} disabled={!newModule}>
+            <Plus className="h-3 w-3" aria-hidden />
+            Arm
+          </Button>
+        </div>
       </section>
 
       <Notice className="mt-4">
