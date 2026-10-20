@@ -3,6 +3,54 @@ import type { EmbedField } from '../../lib/embed'
 import { newId } from '../../lib/embed'
 import { Input, Switch, Textarea } from '../ui/Field'
 
+function ItemChrome({
+  index,
+  total,
+  label,
+  onMove,
+  onRemove,
+}: {
+  index: number
+  total: number
+  label: string
+  onMove: (direction: -1 | 1) => void
+  onRemove: () => void
+}) {
+  return (
+    <div className="mb-2.5 flex items-center justify-between gap-2">
+      <span className="font-mono text-2xs uppercase tracking-[0.1em] text-ink-muted">{label}</span>
+      <div className="flex items-center gap-0.5">
+        <button
+          type="button"
+          onClick={() => onMove(-1)}
+          disabled={index === 0}
+          aria-label={`Move ${label.toLowerCase()} up`}
+          className="rounded p-1 text-ink-muted transition-colors hover:bg-surface hover:text-ink disabled:opacity-30"
+        >
+          <ArrowUp className="h-3 w-3" aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={() => onMove(1)}
+          disabled={index === total - 1}
+          aria-label={`Move ${label.toLowerCase()} down`}
+          className="rounded p-1 text-ink-muted transition-colors hover:bg-surface hover:text-ink disabled:opacity-30"
+        >
+          <ArrowDown className="h-3 w-3" aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Remove ${label.toLowerCase()}`}
+          className="rounded p-1 text-ink-muted transition-colors hover:bg-danger/5 hover:text-danger"
+        >
+          <Trash2 className="h-3 w-3" aria-hidden />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function FieldEditor({
   fields,
   onChange,
@@ -24,44 +72,17 @@ export function FieldEditor({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       {fields.map((field, index) => (
-        <div key={field.id} className="rounded-xl border border-line bg-canvas/50 p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
-              Field {index + 1}
-            </span>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => move(index, -1)}
-                disabled={index === 0}
-                aria-label={`Move field ${index + 1} up`}
-                className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-ink disabled:opacity-30"
-              >
-                <ArrowUp className="h-4 w-4" aria-hidden />
-              </button>
-              <button
-                type="button"
-                onClick={() => move(index, 1)}
-                disabled={index === fields.length - 1}
-                aria-label={`Move field ${index + 1} down`}
-                className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-ink disabled:opacity-30"
-              >
-                <ArrowDown className="h-4 w-4" aria-hidden />
-              </button>
-              <button
-                type="button"
-                onClick={() => onChange(fields.filter((entry) => entry.id !== field.id))}
-                aria-label={`Remove field ${index + 1}`}
-                className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-rose-50 hover:text-danger"
-              >
-                <Trash2 className="h-4 w-4" aria-hidden />
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-3">
+        <div key={field.id} className="rounded border border-line bg-inset p-3">
+          <ItemChrome
+            index={index}
+            total={fields.length}
+            label={`Field ${index + 1}`}
+            onMove={(direction) => move(index, direction)}
+            onRemove={() => onChange(fields.filter((entry) => entry.id !== field.id))}
+          />
+          <div className="space-y-2.5">
             <Input
               label="Name"
               value={field.name}
@@ -93,9 +114,9 @@ export function FieldEditor({
           onChange([...fields, { id: newId('field'), name: '', value: '', inline: true }])
         }
         disabled={fields.length >= 25}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-brand-200 bg-brand-50/40 px-4 py-3 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-1.5 rounded border border-dashed border-line-strong px-3 py-2 text-base font-medium text-ink-soft transition-colors hover:border-brand-300 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <Plus className="h-4 w-4" aria-hidden />
+        <Plus className="h-3 w-3" aria-hidden />
         Add field
       </button>
     </div>

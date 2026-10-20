@@ -1,6 +1,6 @@
 import type { Plugin } from 'vite'
 import { loadEnv } from 'vite'
-import { routes } from './api/_routes'
+import { matchRoute } from './api/_routes'
 
 /**
  * Mounts the Vercel serverless handlers inside the Vite dev server so the
@@ -20,7 +20,7 @@ export function apiDevServer(): Plugin {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const path = (req.url ?? '').split('?')[0]
-        const handler = routes[path]
+        const handler = matchRoute(path)
         if (!handler) return next()
         try {
           await handler(req, res)

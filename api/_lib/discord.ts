@@ -17,6 +17,8 @@ export const discordGuildSchema = z.object({
   icon: z.string().nullable().optional(),
   owner: z.boolean().optional(),
   approximate_member_count: z.number().nullable().optional(),
+  /** The user's permission bitfield in this guild, as a decimal string. */
+  permissions: z.string().optional(),
 })
 
 export const discordTokenSchema = z.object({
@@ -29,6 +31,7 @@ export const discordTokenSchema = z.object({
 
 export type DiscordUser = z.infer<typeof discordUserSchema>
 export type DiscordGuild = z.infer<typeof discordGuildSchema>
+export type DiscordToken = z.infer<typeof discordTokenSchema>
 
 export class DiscordApiError extends Error {
   code: string
@@ -139,4 +142,16 @@ export async function fetchUserGuilds(accessToken: string): Promise<DiscordGuild
   return discordFetch(`${DISCORD_API}/users/@me/guilds`, z.array(discordGuildSchema), {
     headers: { authorization: `Bearer ${accessToken}` },
   })
+}
+
+/** A single guild, including the user's permission bitfield in it. */
+export async function fetchUserGuild(
+  accessToken: string,
+  guildId: string,
+): Promise<DiscordGuild> {
+  return discordFetch(
+    `${DISCORD_API}/users/@me/guilds/${encodeURIComponent(guildId)}`,
+    discordGuildSchema,
+    { headers: { authorization: `Bearer ${accessToken}` } },
+  )
 }

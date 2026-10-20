@@ -71,7 +71,7 @@ export const sessionGuildSchema = z.object({
 
 export const sessionResponseSchema = z.object({
   user: sessionUserSchema,
-  guilds: z.array(sessionGuildSchema),
+  guilds: z.array(sessionGuildSchema).optional(),
   guildsAvailable: z.boolean().optional(),
   expiresAt: z.string(),
 })

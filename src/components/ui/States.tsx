@@ -6,19 +6,18 @@ export function EmptyState({
   title,
   description,
   action,
-  icon,
+  className,
 }: {
   title: string
   description: ReactNode
   action?: ReactNode
-  icon?: ReactNode
+  className?: string
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-line bg-surface/70 px-6 py-14 text-center">
-      {icon ? <div className="mb-4 text-brand-400">{icon}</div> : null}
-      <h3 className="text-base font-semibold text-ink">{title}</h3>
-      <p className="mt-2 max-w-md text-sm text-ink-muted">{description}</p>
-      {action ? <div className="mt-5">{action}</div> : null}
+    <div className={clsx('px-4 py-10 text-center', className)}>
+      <p className="text-base font-medium text-ink">{title}</p>
+      <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-ink-muted">{description}</p>
+      {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
     </div>
   )
 }
@@ -27,7 +26,7 @@ export function ErrorState({
   title = 'Something went wrong',
   description,
   onRetry,
-  retryLabel = 'Try again',
+  retryLabel = 'Retry',
   className,
 }: {
   title?: string
@@ -39,15 +38,12 @@ export function ErrorState({
   return (
     <div
       role="alert"
-      className={clsx(
-        'flex flex-col items-center justify-center rounded-2xl border border-rose-100 bg-rose-50/60 px-6 py-12 text-center',
-        className,
-      )}
+      className={clsx('rounded border border-danger/25 bg-danger/[0.04] px-4 py-5', className)}
     >
-      <h3 className="text-base font-semibold text-rose-900">{title}</h3>
-      <p className="mt-2 max-w-md text-sm text-rose-800/80">{description}</p>
+      <p className="text-base font-medium text-ink">{title}</p>
+      <p className="mt-1.5 max-w-2xl text-xs leading-relaxed text-ink-soft">{description}</p>
       {onRetry ? (
-        <Button variant="outline" className="mt-5" onClick={onRetry}>
+        <Button variant="secondary" size="sm" className="mt-3" onClick={onRetry}>
           {retryLabel}
         </Button>
       ) : null}
@@ -55,26 +51,27 @@ export function ErrorState({
   )
 }
 
-export function InlineNotice({
+export function Notice({
   tone = 'info',
   title,
   children,
   className,
 }: {
-  tone?: 'info' | 'warning' | 'danger'
+  tone?: 'info' | 'warning' | 'danger' | 'success'
   title?: ReactNode
   children: ReactNode
   className?: string
 }) {
   const tones = {
-    info: 'border-brand-100 bg-brand-50/70 text-brand-900',
-    warning: 'border-amber-100 bg-amber-50/70 text-amber-900',
-    danger: 'border-rose-100 bg-rose-50/70 text-rose-900',
+    info: 'border-brand-100 bg-brand-50/60 text-brand-900',
+    warning: 'border-amber-100 bg-amber-50/60 text-amber-900',
+    danger: 'border-danger/25 bg-danger/[0.04] text-ink',
+    success: 'border-emerald-100 bg-emerald-50/60 text-emerald-900',
   }
   return (
-    <div className={clsx('rounded-xl border px-4 py-3 text-sm', tones[tone], className)}>
-      {title ? <p className="font-semibold">{title}</p> : null}
-      <div className={clsx(title && 'mt-1', 'text-[13px] leading-relaxed opacity-90')}>{children}</div>
+    <div className={clsx('rounded border px-3 py-2.5 text-xs leading-relaxed', tones[tone], className)}>
+      {title ? <p className="mb-1 text-base font-medium">{title}</p> : null}
+      {children}
     </div>
   )
 }

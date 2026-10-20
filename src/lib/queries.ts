@@ -59,7 +59,7 @@ export function useSessionQuery() {
     queryKey: queryKeys.session,
     queryFn: async ({ signal }) => {
       try {
-        return await apiFetch('/api/auth/session', sessionResponseSchema, { signal })
+        return await apiFetch('/api/auth/me', sessionResponseSchema, { signal })
       } catch (error) {
         // Not being signed in is a normal state, not an error to surface.
         if (error instanceof ApiError && error.status === 401) return null

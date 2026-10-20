@@ -4,24 +4,23 @@ import { Link } from 'react-router-dom'
 import clsx from 'clsx'
 import { Loader2 } from 'lucide-react'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
-export type ButtonSize = 'sm' | 'md' | 'lg'
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'quiet'
+export type ButtonSize = 'sm' | 'md'
 
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-60'
+  'inline-flex select-none items-center justify-center gap-1.5 rounded font-medium transition-colors duration-100 disabled:cursor-not-allowed disabled:opacity-50'
 
 const variants: Record<ButtonVariant, string> = {
-  primary: 'bg-brand-500 text-white shadow-sm hover:bg-brand-600 active:bg-brand-700',
-  secondary: 'bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-100',
-  outline: 'border border-line bg-surface text-ink hover:border-brand-300 hover:text-brand-600',
-  ghost: 'text-ink-soft hover:bg-brand-50 hover:text-brand-700',
-  danger: 'bg-danger text-white hover:brightness-95',
+  primary: 'bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700',
+  secondary: 'border border-line-strong bg-surface text-ink hover:border-brand-300 hover:text-brand-700',
+  ghost: 'text-ink-soft hover:bg-inset hover:text-ink',
+  danger: 'border border-danger/40 bg-surface text-danger hover:bg-danger/5',
+  quiet: 'text-brand-600 underline-offset-2 hover:underline',
 }
 
 const sizes: Record<ButtonSize, string> = {
-  sm: 'h-9 px-3 text-sm',
-  md: 'h-11 px-4 text-sm',
-  lg: 'h-12 px-6 text-base',
+  sm: 'h-7 px-2.5 text-sm',
+  md: 'h-8 px-3 text-base',
 }
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -31,7 +30,7 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = 'primary', size = 'md', loading = false, className, children, disabled, ...props },
+  { variant = 'secondary', size = 'md', loading = false, className, children, disabled, ...props },
   ref,
 ) {
   return (
@@ -42,7 +41,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       className={clsx(base, variants[variant], sizes[size], className)}
       {...props}
     >
-      {loading ? <Loader2 aria-hidden className="h-4 w-4 animate-spin" /> : null}
+      {loading ? <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin" /> : null}
       {children}
     </button>
   )
@@ -62,7 +61,7 @@ export type ButtonLinkProps = {
 export function ButtonLink({
   to,
   href,
-  variant = 'primary',
+  variant = 'secondary',
   size = 'md',
   className,
   children,

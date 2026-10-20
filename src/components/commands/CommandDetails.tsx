@@ -1,14 +1,13 @@
 import type { Command } from '../../types/api'
 import { Modal } from '../ui/Modal'
-import { Badge } from '../ui/Badge'
+import { Tag } from '../ui/Tag'
 import { CopyButton } from '../ui/CopyButton'
-import { CommandSyntax } from './CommandSyntax'
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[7rem_1fr] items-start gap-3 border-b border-line py-2.5 last:border-b-0">
-      <dt className="text-xs font-medium uppercase tracking-wide text-ink-muted">{label}</dt>
-      <dd className="text-sm text-ink-soft">{children}</dd>
+    <div className="grid grid-cols-[7rem_1fr] items-baseline gap-4 border-b border-line py-2.5 last:border-b-0">
+      <dt className="font-mono text-2xs uppercase tracking-[0.1em] text-ink-muted">{label}</dt>
+      <dd className="min-w-0 text-base text-ink-soft">{children}</dd>
     </div>
   )
 }
@@ -28,34 +27,36 @@ export function CommandDetails({
     <Modal
       open={open}
       onClose={onClose}
+      variant="drawer"
       title={command.name}
       description={command.category}
-      size="md"
     >
       <div className="space-y-5">
         {command.description ? (
-          <p className="text-sm leading-relaxed text-ink-soft">{command.description}</p>
+          <p className="text-base leading-relaxed text-ink-soft">{command.description}</p>
         ) : (
-          <p className="text-sm italic text-ink-muted">This command has no description.</p>
+          <p className="text-base italic text-ink-muted">This command has no description.</p>
         )}
 
         <div>
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-muted">Syntax</p>
-          <div className="flex items-start justify-between gap-3 rounded-xl border border-line bg-canvas px-3.5 py-3">
-            <CommandSyntax syntax={command.syntax} name={command.name} />
+          <div className="mb-1.5 flex items-center justify-between">
+            <p className="font-mono text-2xs uppercase tracking-[0.1em] text-ink-muted">syntax</p>
             <CopyButton
               variant="outline"
               value={command.syntax ?? command.name}
-              label="Copy syntax"
-              copiedLabel="Syntax copied"
+              label="Copy"
+              copiedLabel="Copied"
             />
           </div>
+          <code className="block overflow-x-auto rounded border border-line bg-inset px-3 py-2 font-mono text-base text-ink">
+            {command.syntax ?? command.name}
+          </code>
         </div>
 
-        <dl className="border-t border-line">
+        <dl>
           <Row label="Parameters">
             {command.args ? (
-              <span className="font-mono text-[13px] text-ink">{command.args}</span>
+              <span className="font-mono text-base text-ink">{command.args}</span>
             ) : (
               <span className="text-ink-muted">None</span>
             )}
@@ -63,13 +64,13 @@ export function CommandDetails({
 
           <Row label="Permissions">
             {command.permissions.length ? (
-              <div className="flex flex-wrap gap-1.5">
+              <span className="flex flex-wrap gap-1">
                 {command.permissions.map((permission, index) => (
-                  <Badge key={`${permission}-${index}`} tone="brand">
+                  <Tag key={`${permission}-${index}`} tone="brand">
                     {permission}
-                  </Badge>
+                  </Tag>
                 ))}
-              </div>
+              </span>
             ) : (
               <span className="text-ink-muted">None required</span>
             )}
@@ -77,13 +78,13 @@ export function CommandDetails({
 
           <Row label="Aliases">
             {command.aliases.length ? (
-              <div className="flex flex-wrap gap-1.5">
+              <span className="flex flex-wrap gap-1">
                 {command.aliases.map((alias, index) => (
-                  <Badge key={`${alias}-${index}`} tone="outline">
+                  <Tag key={`${alias}-${index}`} tone="outline">
                     {alias}
-                  </Badge>
+                  </Tag>
                 ))}
-              </div>
+              </span>
             ) : (
               <span className="text-ink-muted">None</span>
             )}
@@ -91,7 +92,7 @@ export function CommandDetails({
 
           <Row label="Cooldown">
             {command.cooldown ? (
-              <span className="text-ink-soft">{command.cooldown}</span>
+              <span className="font-mono text-base">{command.cooldown}</span>
             ) : (
               <span className="text-ink-muted">None</span>
             )}
@@ -99,13 +100,13 @@ export function CommandDetails({
 
           <Row label="Flags">
             {command.flags.length ? (
-              <div className="flex flex-wrap gap-1.5">
+              <span className="flex flex-wrap gap-1">
                 {command.flags.map((flag, index) => (
-                  <Badge key={`${flag}-${index}`} tone="outline">
+                  <Tag key={`${flag}-${index}`} tone="outline">
                     {flag}
-                  </Badge>
+                  </Tag>
                 ))}
-              </div>
+              </span>
             ) : (
               <span className="text-ink-muted">None</span>
             )}
@@ -113,17 +114,17 @@ export function CommandDetails({
 
           <Row label="Example">
             {command.example ? (
-              <div className="flex items-start justify-between gap-3">
-                <code className="block overflow-x-auto rounded-lg bg-canvas px-3 py-2 font-mono text-[13px] text-ink">
+              <span className="flex items-start justify-between gap-3">
+                <code className="block min-w-0 overflow-x-auto rounded border border-line bg-inset px-2.5 py-1.5 font-mono text-sm text-ink">
                   {command.example}
                 </code>
                 <CopyButton
                   variant="outline"
                   value={command.example}
-                  label="Copy example"
-                  copiedLabel="Example copied"
+                  label="Copy"
+                  copiedLabel="Copied"
                 />
-              </div>
+              </span>
             ) : (
               <span className="text-ink-muted">None</span>
             )}

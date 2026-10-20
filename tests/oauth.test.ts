@@ -135,7 +135,7 @@ describe('discord oauth flow', () => {
     expect(sessionCookie).not.toContain('access-token')
 
     const session = readSession(
-      mockRequest('/api/auth/session', { cookie: `${SESSION_COOKIE}=${sessionCookie}` }),
+      mockRequest('/api/auth/me', { cookie: `${SESSION_COOKIE}=${sessionCookie}` }),
     )
     expect(session?.user.username).toBe('bore')
     expect(session?.user.avatar).toContain('cdn.discordapp.com')

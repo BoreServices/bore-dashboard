@@ -36,6 +36,45 @@ export const botStatsSchema = z.object({
 
 export const botShardsSchema = z.record(z.array(z.string()))
 
+export const botChannelSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.number(),
+  parent_id: z.string().nullable().optional(),
+  position: z.number().optional(),
+})
+
+export const botChannelsSchema = z.object({ channels: z.array(botChannelSchema) })
+
+export const botRoleSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  color: z.number().optional(),
+  position: z.number().optional(),
+  managed: z.boolean().optional(),
+  mentionable: z.boolean().optional(),
+})
+
+export const botRolesSchema = z.object({ roles: z.array(botRoleSchema) })
+
+export type BotChannel = z.infer<typeof botChannelSchema>
+export type BotRole = z.infer<typeof botRoleSchema>
+
+/**
+ * The routes the website is allowed to call on the bot API. The bot API is
+ * the only party that holds the bot token, so guild channels and roles are
+ * read through it rather than with the user's OAuth token — Discord removed
+ * the user-token channel and role endpoints.
+ */
+export type BotApiPath =
+  | '/commands'
+  | '/status'
+  | '/stats'
+  | '/shards'
+  | `/guilds/${string}`
+  | `/guilds/${string}/channels`
+  | `/guilds/${string}/roles`
+
 export type BotCommand = z.infer<typeof botCommandSchema>
 export type BotStatus = z.infer<typeof botStatusSchema>
 export type BotStats = z.infer<typeof botStatsSchema>
@@ -65,7 +104,7 @@ export function botApiBaseUrl(): string | null {
  * four documented routes — the frontend never controls the upstream URL.
  */
 export async function fetchBotApi<T>(
-  path: '/commands' | '/status' | '/stats' | '/shards',
+  path: BotApiPath,
   schema: z.ZodType<T>,
 ): Promise<T> {
   const base = botApiBaseUrl()
@@ -144,4 +183,64 @@ export async function fetchBotApi<T>(
     )
   }
   return parsed.data
+}
+
+type BotGuildCache = { guilds: Set<string>; expiresAt: number }
+
+let botGuildCache: BotGuildCache | null = null
+const BOT_GUILD_CACHE_TTL_MS = 60_000
+
+/**
+ * The union of every shard's guild ids: the servers the bot is actually in.
+ * Returns null when the bot API cannot be reached, so callers can report
+ * "unknown" instead of "not installed".
+ */
+export async function getBotGuildIds(): Promise<Set<string> | null> {
+  if (botGuildCache && botGuildCache.expiresAt > Date.now()) return botGuildCache.guilds
+
+  try {
+    const shards = await fetchBotApi('/shards', botShardsSchema)
+    const guilds = new Set<string>()
+    for (const ids of Object.values(shards)) {
+      for (const id of ids) guilds.add(id)
+    }
+    botGuildCache = { guilds, expiresAt: Date.now() + BOT_GUILD_CACHE_TTL_MS }
+    return guilds
+  } catch {
+    return null
+  }
+}
+
+/** Raised when the bot is not a member of the requested guild. */
+export class BotNotInGuildError extends Error {
+  constructor() {
+    super('Bore is not installed in this server.')
+    this.name = 'BotNotInGuildError'
+  }
+}
+
+export async function fetchBotGuildChannels(guildId: string): Promise<BotChannel[]> {
+  try {
+    const payload = await fetchBotApi(
+      `/guilds/${encodeURIComponent(guildId)}/channels`,
+      botChannelsSchema,
+    )
+    return payload.channels
+  } catch (error) {
+    if (error instanceof BotApiError && error.status === 404) throw new BotNotInGuildError()
+    throw error
+  }
+}
+
+export async function fetchBotGuildRoles(guildId: string): Promise<BotRole[]> {
+  try {
+    const payload = await fetchBotApi(
+      `/guilds/${encodeURIComponent(guildId)}/roles`,
+      botRolesSchema,
+    )
+    return payload.roles
+  } catch (error) {
+    if (error instanceof BotApiError && error.status === 404) throw new BotNotInGuildError()
+    throw error
+  }
 }

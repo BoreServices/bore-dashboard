@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, ArrowDown, ArrowUp } from 'lucide-react'
 import type { EmbedButton, EmbedButtonStyle } from '../../lib/embed'
 import { newId } from '../../lib/embed'
 import { Input, Select, Switch } from '../ui/Field'
@@ -31,44 +31,44 @@ export function ButtonEditor({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       {buttons.map((button, index) => (
-        <div key={button.id} className="rounded-xl border border-line bg-canvas/50 p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+        <div key={button.id} className="rounded border border-line bg-inset p-3">
+          <div className="mb-2.5 flex items-center justify-between gap-2">
+            <span className="font-mono text-2xs uppercase tracking-[0.1em] text-ink-muted">
               Button {index + 1}
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               <button
                 type="button"
                 onClick={() => move(index, -1)}
                 disabled={index === 0}
                 aria-label={`Move button ${index + 1} up`}
-                className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-ink disabled:opacity-30"
+                className="rounded p-1 text-ink-muted transition-colors hover:bg-surface hover:text-ink disabled:opacity-30"
               >
-                <ArrowUp className="h-4 w-4" aria-hidden />
+                <ArrowUp className="h-3 w-3" aria-hidden />
               </button>
               <button
                 type="button"
                 onClick={() => move(index, 1)}
                 disabled={index === buttons.length - 1}
                 aria-label={`Move button ${index + 1} down`}
-                className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-ink disabled:opacity-30"
+                className="rounded p-1 text-ink-muted transition-colors hover:bg-surface hover:text-ink disabled:opacity-30"
               >
-                <ArrowDown className="h-4 w-4" aria-hidden />
+                <ArrowDown className="h-3 w-3" aria-hidden />
               </button>
               <button
                 type="button"
                 onClick={() => onChange(buttons.filter((entry) => entry.id !== button.id))}
                 aria-label={`Remove button ${index + 1}`}
-                className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-rose-50 hover:text-danger"
+                className="rounded p-1 text-ink-muted transition-colors hover:bg-danger/5 hover:text-danger"
               >
-                <Trash2 className="h-4 w-4" aria-hidden />
+                <Trash2 className="h-3 w-3" aria-hidden />
               </button>
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             <Input
               label="Label"
               value={button.label}
@@ -82,7 +82,7 @@ export function ButtonEditor({
               placeholder="https://example.com"
               onChange={(event) => update(button.id, { url: event.target.value })}
             />
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-2.5 sm:grid-cols-2">
               <Input
                 label="Emoji"
                 value={button.emoji}
@@ -120,9 +120,9 @@ export function ButtonEditor({
           ])
         }
         disabled={buttons.length >= 5}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-brand-200 bg-brand-50/40 px-4 py-3 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-1.5 rounded border border-dashed border-line-strong px-3 py-2 text-base font-medium text-ink-soft transition-colors hover:border-brand-300 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <Plus className="h-4 w-4" aria-hidden />
+        <Plus className="h-3 w-3" aria-hidden />
         Add button
       </button>
     </div>

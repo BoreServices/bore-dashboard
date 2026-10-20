@@ -84,7 +84,7 @@ function mockApi(overrides: Record<string, () => Response> = {}) {
           ? statusPayload
           : key === '/api/stats'
             ? statsPayload
-            : key === '/api/auth/session'
+            : key === '/api/auth/me'
               ? null
               : {}
 
@@ -129,11 +129,12 @@ describe('public pages', () => {
     renderApp('/')
 
     expect(
-      screen.getByRole('heading', { name: /Everything a Discord server needs/i }),
+      screen.getByRole('heading', { name: /Moderate, automate and configure/i }),
     ).toBeInTheDocument()
 
     expect(await screen.findByText('912')).toBeInTheDocument()
     expect(screen.getByText('79,222')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /What the bot actually ships/i })).toBeInTheDocument()
   })
 
   it('lists commands from the bot API and filters them', async () => {
@@ -164,10 +165,10 @@ describe('public pages', () => {
   it('shows shard health on the status page', async () => {
     renderApp('/status')
 
-    expect(await screen.findByText('Shard #0')).toBeInTheDocument()
-    expect(screen.getByText('Shard #1')).toBeInTheDocument()
-    expect(screen.getByText('Ready')).toBeInTheDocument()
-    expect(screen.getByText('Not ready')).toBeInTheDocument()
+    expect(await screen.findByText('#0')).toBeInTheDocument()
+    expect(screen.getByText('#1')).toBeInTheDocument()
+    expect(screen.getByText('ready')).toBeInTheDocument()
+    expect(screen.getByText('not ready')).toBeInTheDocument()
   })
 
   it('reports an honest error state when the bot API is unreachable', async () => {
@@ -186,7 +187,7 @@ describe('public pages', () => {
     expect(
       await screen.findByText('The command directory is unavailable'),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument()
   })
 
   it('toggles the mobile navigation', async () => {
@@ -201,9 +202,9 @@ describe('public pages', () => {
     expect(screen.getByRole('navigation', { name: 'Mobile' })).toBeInTheDocument()
   })
 
-  it('shows the sign in call to action on the dashboard when signed out', async () => {
+  it('sends signed out visitors from the dashboard to the login page', async () => {
     renderApp('/dashboard')
-    expect(await screen.findByText('Sign in to open your dashboard')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /sign in to bore/i })).toBeInTheDocument()
   })
 
   it('renders the embed builder with a live preview', async () => {

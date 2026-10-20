@@ -1,21 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  Braces,
-  Check,
-  Copy,
-  Download,
-  FileJson,
-  Info,
-  RotateCcw,
-  Sparkles,
-  Upload,
-} from 'lucide-react'
+import { Braces, Copy, Download, FileJson, RotateCcw, Upload } from 'lucide-react'
 import { toast } from 'sonner'
-import { Container, PageHeader } from '../components/layout/Container'
+import { Container } from '../components/layout/Container'
 import { Button } from '../components/ui/Button'
 import { Input, Textarea } from '../components/ui/Field'
 import { Modal } from '../components/ui/Modal'
-import { InlineNotice } from '../components/ui/States'
+import { Notice } from '../components/ui/States'
 import { EmbedPreview } from '../components/embed/EmbedPreview'
 import { FieldEditor } from '../components/embed/FieldEditor'
 import { ButtonEditor } from '../components/embed/ButtonEditor'
@@ -53,6 +43,24 @@ function loadDraft(): EmbedConfig | null {
   } catch {
     return null
   }
+}
+
+function Group({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description?: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="border-b border-line px-4 py-4 last:border-b-0">
+      <h3 className="font-mono text-2xs uppercase tracking-[0.12em] text-ink-muted">{title}</h3>
+      {description ? <p className="mt-1 text-xs text-ink-muted">{description}</p> : null}
+      <div className="mt-3 space-y-3">{children}</div>
+    </section>
+  )
 }
 
 export function EmbedPage() {
@@ -113,20 +121,19 @@ export function EmbedPage() {
   const applyImport = () => {
     const result = parseEmbed(importValue)
     const imported = result.config
-    const hasContent =
-      Boolean(
-        imported.title ||
-          imported.description ||
-          imported.content ||
-          imported.image ||
-          imported.thumbnail ||
-          imported.authorName ||
-          imported.authorIcon ||
-          imported.footerText ||
-          imported.footerIcon ||
-          imported.fields.length ||
-          imported.buttons.length,
-      )
+    const hasContent = Boolean(
+      imported.title ||
+        imported.description ||
+        imported.content ||
+        imported.image ||
+        imported.thumbnail ||
+        imported.authorName ||
+        imported.authorIcon ||
+        imported.footerText ||
+        imported.footerIcon ||
+        imported.fields.length ||
+        imported.buttons.length,
+    )
     if (!hasContent) {
       toast.error('Nothing importable found in that script')
       return
@@ -157,61 +164,76 @@ export function EmbedPage() {
 
   return (
     <>
-      <div className="border-b border-line bg-gradient-to-b from-brand-50/60 to-canvas">
-        <Container className="py-12">
-          <PageHeader
-            eyebrow="Embed builder"
-            title="Build a Discord embed"
-            description="Compose an embed visually, watch it render the way Discord does, then copy the script the bot understands."
-            actions={
-              <>
-                <Button variant="outline" onClick={() => setImportOpen(true)}>
-                  <Upload className="h-4 w-4" aria-hidden />
-                  Import
-                </Button>
-                <Button variant="outline" onClick={() => setResetOpen(true)}>
-                  <RotateCcw className="h-4 w-4" aria-hidden />
-                  Reset
-                </Button>
-                <Button onClick={copyScript} disabled={errors.length > 0}>
-                  <Copy className="h-4 w-4" aria-hidden />
-                  Copy script
-                </Button>
-              </>
-            }
-          />
+      <div className="border-b border-line bg-canvas">
+        <Container className="py-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="font-mono text-2xs uppercase tracking-[0.14em] text-ink-muted">
+                embed builder
+              </p>
+              <h1 className="mt-1.5 text-xl font-semibold tracking-tight text-ink">
+                Compose a Discord embed
+              </h1>
+              <p className="mt-2 max-w-xl text-base text-ink-soft">
+                The output is the exact script format the bot parses — copy it straight into an
+                embed command.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}>
+                <Upload className="h-3 w-3" aria-hidden />
+                Import
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => setResetOpen(true)}>
+                <RotateCcw className="h-3 w-3" aria-hidden />
+                Reset
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={copyScript}
+                disabled={errors.length > 0}
+              >
+                <Copy className="h-3 w-3" aria-hidden />
+                Copy script
+              </Button>
+            </div>
+          </div>
         </Container>
       </div>
 
-      <Container className="py-10">
+      <Container className="py-8">
         {errors.length ? (
-          <InlineNotice tone="danger" className="mb-6" title={`${errors.length} issue${errors.length > 1 ? 's' : ''} to fix`}>
-            <ul className="list-disc space-y-1 pl-4">
+          <Notice tone="danger" className="mb-4" title={`${errors.length} issue${errors.length > 1 ? 's' : ''} to fix`}>
+            <ul className="list-disc space-y-0.5 pl-4">
               {errors.map((issue) => (
                 <li key={`${issue.field}-${issue.message}`}>{issue.message}</li>
               ))}
             </ul>
-          </InlineNotice>
+          </Notice>
         ) : null}
 
         {conflicts.length ? (
-          <InlineNotice tone="warning" className="mb-6" title="Separator conflict">
+          <Notice tone="warning" className="mb-4" title="Separator conflict">
             {conflicts.join(', ')} contain “&amp;&amp;”, which the bot uses as a separator inside
             fields, footers, authors and buttons. Those values may not survive a round trip.
-          </InlineNotice>
+          </Notice>
         ) : null}
 
-        <div className="grid gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-7">
-            <div className="flex gap-1 rounded-xl border border-line bg-surface p-1">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_23rem]">
+          <div className="min-w-0">
+            <div className="mb-4 flex gap-1 border-b border-line">
               {(['editor', 'output'] as const).map((value) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => setTab(value)}
-                  aria-pressed={tab === value}
-                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium capitalize transition-colors ${
-                    tab === value ? 'bg-brand-50 text-brand-700' : 'text-ink-muted hover:text-ink'
+                  aria-current={tab === value}
+                  className={`-mb-px border-b-2 px-3 py-1.5 text-base capitalize transition-colors ${
+                    tab === value
+                      ? 'border-brand-500 font-medium text-brand-700'
+                      : 'border-transparent text-ink-muted hover:text-ink'
                   }`}
                 >
                   {value === 'editor' ? 'Editor' : 'Output'}
@@ -220,147 +242,127 @@ export function EmbedPage() {
             </div>
 
             {tab === 'editor' ? (
-              <div className="mt-6 space-y-6">
-                <section className="surface-card p-5">
-                  <h2 className="text-sm font-semibold text-ink">Message</h2>
+              <div className="overflow-hidden rounded border border-line bg-surface">
+                <Group title="message">
                   <Textarea
-                    className="mt-4"
-                    label="Content"
                     rows={3}
                     maxLength={2000}
                     value={config.content}
                     placeholder="Text shown above the embed"
+                    aria-label="Message content"
                     onChange={(event) => patch({ content: event.target.value })}
                   />
-                </section>
+                </Group>
 
-                <section className="surface-card p-5">
-                  <h2 className="text-sm font-semibold text-ink">Embed</h2>
-                  <div className="mt-4 space-y-4">
-                    <Input
-                      label="Title"
-                      maxLength={256}
-                      value={config.title}
-                      onChange={(event) => patch({ title: event.target.value })}
-                    />
-                    <Textarea
-                      label="Description"
-                      rows={4}
-                      maxLength={4096}
-                      value={config.description}
-                      onChange={(event) => patch({ description: event.target.value })}
-                    />
+                <Group title="embed">
+                  <Input
+                    label="Title"
+                    maxLength={256}
+                    value={config.title}
+                    onChange={(event) => patch({ title: event.target.value })}
+                  />
+                  <Textarea
+                    label="Description"
+                    rows={4}
+                    maxLength={4096}
+                    value={config.description}
+                    onChange={(event) => patch({ description: event.target.value })}
+                  />
 
-                    <div className="space-y-1.5">
-                      <span className="text-sm font-medium text-ink">Colour</span>
-                      <div className="flex flex-wrap items-center gap-3">
-                        <input
-                          type="color"
-                          aria-label="Pick embed colour"
-                          value={isHexColor(config.color) ? normalizeColor(config.color) : '#77A9F7'}
-                          onChange={(event) => patch({ color: event.target.value.toUpperCase() })}
-                          className="h-10 w-14 cursor-pointer rounded-lg border border-line bg-surface p-1"
-                        />
-                        <input
-                          type="text"
-                          aria-label="Embed colour hex value"
-                          value={config.color}
-                          onChange={(event) => patch({ color: event.target.value })}
-                          className="h-10 w-40 rounded-xl border border-line bg-surface px-3 font-mono text-sm uppercase focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200"
-                        />
-                        {!isHexColor(config.color) ? (
-                          <span className="text-xs font-medium text-danger">Use a hex value such as #77A9F7</span>
-                        ) : null}
-                      </div>
+                  <div className="space-y-1.5">
+                    <span className="text-xs font-medium text-ink-soft">Colour</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <input
+                        type="color"
+                        aria-label="Pick embed colour"
+                        value={isHexColor(config.color) ? normalizeColor(config.color) : '#78A9F5'}
+                        onChange={(event) => patch({ color: event.target.value.toUpperCase() })}
+                        className="h-7 w-10 cursor-pointer rounded border border-line bg-surface p-0.5"
+                      />
+                      <input
+                        type="text"
+                        aria-label="Embed colour hex value"
+                        value={config.color}
+                        onChange={(event) => patch({ color: event.target.value })}
+                        className="h-7 w-32 rounded border border-line-strong bg-surface px-2 font-mono text-base uppercase focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
+                      />
+                      {!isHexColor(config.color) ? (
+                        <span className="text-2xs font-medium text-danger">
+                          Use a hex value such as #78A9F5
+                        </span>
+                      ) : null}
                     </div>
-
-                    <Input
-                      label="Image URL"
-                      value={config.image}
-                      placeholder="https://example.com/image.png"
-                      onChange={(event) => patch({ image: event.target.value })}
-                    />
-                    <Input
-                      label="Thumbnail URL"
-                      value={config.thumbnail}
-                      placeholder="https://example.com/thumbnail.png"
-                      onChange={(event) => patch({ thumbnail: event.target.value })}
-                    />
                   </div>
-                </section>
 
-                <section className="surface-card p-5">
-                  <h2 className="text-sm font-semibold text-ink">Author</h2>
-                  <div className="mt-4 space-y-4">
-                    <Input
-                      label="Name"
-                      maxLength={256}
-                      value={config.authorName}
-                      onChange={(event) => patch({ authorName: event.target.value })}
-                    />
-                    <Input
-                      label="Icon URL"
-                      value={config.authorIcon}
-                      placeholder="https://example.com/avatar.png"
-                      onChange={(event) => patch({ authorIcon: event.target.value })}
-                    />
-                    <Input
-                      label="Link"
-                      value={config.authorUrl}
-                      placeholder="https://example.com"
-                      onChange={(event) => patch({ authorUrl: event.target.value })}
-                    />
-                  </div>
-                </section>
+                  <Input
+                    label="Image URL"
+                    value={config.image}
+                    placeholder="https://example.com/image.png"
+                    onChange={(event) => patch({ image: event.target.value })}
+                  />
+                  <Input
+                    label="Thumbnail URL"
+                    value={config.thumbnail}
+                    placeholder="https://example.com/thumbnail.png"
+                    onChange={(event) => patch({ thumbnail: event.target.value })}
+                  />
+                </Group>
 
-                <section className="surface-card p-5">
-                  <h2 className="text-sm font-semibold text-ink">Footer</h2>
-                  <div className="mt-4 space-y-4">
-                    <Input
-                      label="Text"
-                      maxLength={2048}
-                      value={config.footerText}
-                      onChange={(event) => patch({ footerText: event.target.value })}
-                    />
-                    <Input
-                      label="Icon URL"
-                      value={config.footerIcon}
-                      placeholder="https://example.com/icon.png"
-                      onChange={(event) => patch({ footerIcon: event.target.value })}
-                    />
-                  </div>
-                </section>
+                <Group title="author">
+                  <Input
+                    label="Name"
+                    maxLength={256}
+                    value={config.authorName}
+                    onChange={(event) => patch({ authorName: event.target.value })}
+                  />
+                  <Input
+                    label="Icon URL"
+                    value={config.authorIcon}
+                    placeholder="https://example.com/avatar.png"
+                    onChange={(event) => patch({ authorIcon: event.target.value })}
+                  />
+                  <Input
+                    label="Link"
+                    value={config.authorUrl}
+                    placeholder="https://example.com"
+                    onChange={(event) => patch({ authorUrl: event.target.value })}
+                  />
+                </Group>
 
-                <section className="surface-card p-5">
-                  <h2 className="text-sm font-semibold text-ink">Fields</h2>
-                  <p className="mt-1 text-xs text-ink-muted">
-                    Discord supports up to 25 fields, three per row when inline.
-                  </p>
-                  <div className="mt-4">
-                    <FieldEditor
-                      fields={config.fields}
-                      onChange={(fields) => patch({ fields })}
-                    />
-                  </div>
-                </section>
+                <Group title="footer">
+                  <Input
+                    label="Text"
+                    maxLength={2048}
+                    value={config.footerText}
+                    onChange={(event) => patch({ footerText: event.target.value })}
+                  />
+                  <Input
+                    label="Icon URL"
+                    value={config.footerIcon}
+                    placeholder="https://example.com/icon.png"
+                    onChange={(event) => patch({ footerIcon: event.target.value })}
+                  />
+                </Group>
 
-                <section className="surface-card p-5">
-                  <h2 className="text-sm font-semibold text-ink">Buttons</h2>
-                  <p className="mt-1 text-xs text-ink-muted">
-                    Up to five link buttons per message. The bot creates link buttons only.
-                  </p>
-                  <div className="mt-4">
-                    <ButtonEditor buttons={config.buttons} onChange={(buttons) => patch({ buttons })} />
-                  </div>
-                </section>
+                <Group
+                  title="fields"
+                  description="Discord supports up to 25 fields, three per row when inline."
+                >
+                  <FieldEditor fields={config.fields} onChange={(fields) => patch({ fields })} />
+                </Group>
 
-                <section className="surface-card p-5">
-                  <h2 className="text-sm font-semibold text-ink">Placeholders</h2>
-                  <p className="mt-1 text-xs text-ink-muted">
-                    The bot resolves these when the script is sent. Click one to insert it into the
-                    description.
-                  </p>
-                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                <Group
+                  title="buttons"
+                  description="Up to five link buttons per message. Discord renders link buttons in its default grey style."
+                >
+                  <ButtonEditor buttons={config.buttons} onChange={(buttons) => patch({ buttons })} />
+                </Group>
+
+                <Group
+                  title="placeholders"
+                  description="Resolved by the bot when the script is sent. Click to append to the description."
+                >
+                  <div className="grid gap-1 sm:grid-cols-2">
                     {PLACEHOLDERS.map((placeholder) => (
                       <button
                         key={placeholder.token}
@@ -369,110 +371,93 @@ export function EmbedPage() {
                           patch({ description: `${config.description}${placeholder.token}` })
                         }
                         title={`Insert ${placeholder.token}`}
-                        className="flex items-center justify-between gap-3 rounded-lg border border-line bg-canvas/60 px-3 py-2 text-left transition-colors hover:border-brand-200 hover:bg-brand-50/60"
+                        className="flex items-center justify-between gap-3 rounded border border-line bg-inset px-2 py-1 text-left transition-colors hover:border-brand-200 hover:bg-brand-50/60"
                       >
-                        <code className="font-mono text-[12px] text-brand-700">{placeholder.token}</code>
-                        <span className="truncate text-[11px] text-ink-muted">{placeholder.description}</span>
+                        <code className="font-mono text-2xs text-brand-700">{placeholder.token}</code>
+                        <span className="truncate text-2xs text-ink-muted">
+                          {placeholder.description}
+                        </span>
                       </button>
                     ))}
                   </div>
-                </section>
+                </Group>
               </div>
             ) : (
-              <div className="mt-6 space-y-6">
-                <section className="surface-card p-5">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-sm font-semibold text-ink">Embed script</h2>
-                      <p className="mt-1 text-xs text-ink-muted">
-                        The exact format the bot parses — paste it into any embed command.
-                      </p>
-                    </div>
-                    <Button size="sm" variant="secondary" onClick={copyScript} disabled={errors.length > 0}>
-                      <Copy className="h-3.5 w-3.5" aria-hidden />
+              <div className="space-y-4">
+                <section className="overflow-hidden rounded border border-line bg-surface">
+                  <div className="flex items-center justify-between gap-3 border-b border-line px-3 py-2">
+                    <h2 className="font-mono text-2xs uppercase tracking-[0.12em] text-ink-muted">
+                      embed script
+                    </h2>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={copyScript}
+                      disabled={errors.length > 0}
+                    >
+                      <Copy className="h-3 w-3" aria-hidden />
                       Copy
                     </Button>
                   </div>
-                  <pre className="mt-4 overflow-x-auto whitespace-pre-wrap break-all rounded-xl border border-line bg-canvas px-4 py-3 font-mono text-[12px] leading-relaxed text-ink">
+                  <pre className="overflow-x-auto whitespace-pre-wrap break-all px-3 py-3 font-mono text-sm leading-relaxed text-ink">
                     {script}
                   </pre>
                 </section>
 
-                <section className="surface-card p-5">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-sm font-semibold text-ink">JSON payload</h2>
-                      <p className="mt-1 text-xs text-ink-muted">
-                        A Discord-compatible embed payload for other tools.
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={copyJson}>
-                        <Copy className="h-3.5 w-3.5" aria-hidden />
+                <section className="overflow-hidden rounded border border-line bg-surface">
+                  <div className="flex items-center justify-between gap-3 border-b border-line px-3 py-2">
+                    <h2 className="font-mono text-2xs uppercase tracking-[0.12em] text-ink-muted">
+                      json payload
+                    </h2>
+                    <div className="flex gap-1.5">
+                      <Button size="sm" variant="secondary" onClick={copyJson}>
+                        <Copy className="h-3 w-3" aria-hidden />
                         Copy
                       </Button>
-                      <Button size="sm" variant="outline" onClick={downloadJson}>
-                        <Download className="h-3.5 w-3.5" aria-hidden />
+                      <Button size="sm" variant="secondary" onClick={downloadJson}>
+                        <Download className="h-3 w-3" aria-hidden />
                         Export
                       </Button>
                     </div>
                   </div>
-                  <pre className="mt-4 max-h-96 overflow-auto rounded-xl border border-line bg-canvas px-4 py-3 font-mono text-[12px] leading-relaxed text-ink">
+                  <pre className="max-h-96 overflow-auto px-3 py-3 font-mono text-sm leading-relaxed text-ink">
                     {json}
                   </pre>
                 </section>
 
-                <InlineNotice title="About sending">
-                  The bot API does not expose a send endpoint, so this builder never claims to
-                  deliver a message to Discord. Copy the script into the bot's embed command, or
-                  export the JSON for a tool that can post it.
-                </InlineNotice>
+                <Notice>
+                  The bot API exposes no send endpoint, so this builder never claims to deliver a
+                  message to Discord. Copy the script into the bot's embed command, or export the
+                  JSON for a tool that can post it.
+                </Notice>
               </div>
             )}
           </div>
 
-          <div className="lg:col-span-5">
-            <div className="lg:sticky lg:top-24">
+          <div className="min-w-0">
+            <div className="lg:sticky lg:top-20">
               <EmbedPreview config={config} sample={sample} onToggleSample={setSample} />
 
-              <div className="mt-6 space-y-3">
-                <InlineNotice title="Draft saved locally">
-                  <span className="flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5" aria-hidden />
-                    Your draft is stored in this browser only.
-                  </span>
-                </InlineNotice>
-
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm" onClick={copyScript} disabled={errors.length > 0}>
-                    <Braces className="h-3.5 w-3.5" aria-hidden />
-                    Copy script
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={copyJson}>
-                    <FileJson className="h-3.5 w-3.5" aria-hidden />
-                    Copy JSON
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearDraft}
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" aria-hidden />
-                    Clear draft
-                  </Button>
-                </div>
-
-                <p className="flex items-start gap-2 text-xs leading-relaxed text-ink-muted">
-                  <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-500" aria-hidden />
-                  Placeholders are shown literally unless you switch on sample values. Only the bot,
-                  running inside Discord, can resolve them for real.
-                </p>
-
-                <p className="flex items-start gap-2 text-xs leading-relaxed text-ink-muted">
-                  <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-500" aria-hidden />
-                  The builder started from an example embed. Use Reset to start from an empty embed.
-                </p>
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                <Button variant="secondary" size="sm" onClick={copyScript} disabled={errors.length > 0}>
+                  <Braces className="h-3 w-3" aria-hidden />
+                  Copy script
+                </Button>
+                <Button variant="secondary" size="sm" onClick={copyJson}>
+                  <FileJson className="h-3 w-3" aria-hidden />
+                  Copy JSON
+                </Button>
+                <Button variant="ghost" size="sm" onClick={clearDraft}>
+                  <RotateCcw className="h-3 w-3" aria-hidden />
+                  Clear draft
+                </Button>
               </div>
+
+              <p className="mt-3 text-2xs leading-relaxed text-ink-muted">
+                Placeholders are shown literally unless sample values are switched on. Only the bot,
+                running inside Discord, can resolve them for real. The draft is stored in this
+                browser only.
+              </p>
             </div>
           </div>
         </div>
@@ -483,13 +468,14 @@ export function EmbedPage() {
         onClose={() => setImportOpen(false)}
         title="Import an embed script"
         description="Paste a script in the bot's format. Parts the builder does not understand are reported."
-        size="lg"
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={() => setImportOpen(false)}>
+            <Button variant="ghost" size="sm" onClick={() => setImportOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={applyImport}>Import</Button>
+            <Button size="sm" onClick={applyImport}>
+              Import
+            </Button>
           </div>
         }
       >
@@ -510,23 +496,22 @@ export function EmbedPage() {
         open={resetOpen}
         onClose={() => setResetOpen(false)}
         title="Reset the builder"
-        description="This replaces the current draft. The draft stored in this browser is cleared too."
-        size="sm"
+        description="This replaces the current draft and clears the copy stored in this browser."
         footer={
           <div className="flex flex-wrap justify-end gap-2">
-            <Button variant="ghost" onClick={() => setResetOpen(false)}>
+            <Button variant="ghost" size="sm" onClick={() => setResetOpen(false)}>
               Cancel
             </Button>
-            <Button variant="outline" onClick={() => reset(true)}>
+            <Button variant="secondary" size="sm" onClick={() => reset(true)}>
               Load example
             </Button>
-            <Button variant="danger" onClick={() => reset(false)}>
+            <Button variant="danger" size="sm" onClick={() => reset(false)}>
               Start empty
             </Button>
           </div>
         }
       >
-        <p className="text-sm text-ink-soft">
+        <p className="text-base text-ink-soft">
           Choose the example embed to start from a filled-in template, or start from an empty embed.
         </p>
       </Modal>

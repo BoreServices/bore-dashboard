@@ -5,14 +5,22 @@ React + Vite + TypeScript application that talks to the bot's existing Flask API
 Discord's OAuth2 service. It never runs the bot, and it never contains bot or Discord
 credentials in the browser bundle.
 
-| Route            | What it does                                                                 |
-| ---------------- | ---------------------------------------------------------------------------- |
-| `/`              | Marketing homepage with live statistics taken from the bot API                 |
-| `/commands`      | Searchable command directory generated from the running bot                    |
-| `/status`        | Live shard health, latency and uptime, polled from the bot API                |
-| `/embed`         | Interactive Discord embed builder with a live preview and script export       |
-| `/auth/login`    | Real Discord OAuth2 sign-in (server-side code exchange, encrypted session)    |
-| `/dashboard`     | Signed-in dashboard — clearly marked as work in progress                       |
+| Route                 | What it does                                                            |
+| --------------------- | ----------------------------------------------------------------------- |
+| `/`                   | Marketing homepage with live statistics taken from the bot API          |
+| `/commands`           | Searchable command directory generated from the running bot             |
+| `/status`             | Live shard health, latency and uptime, polled from the bot API         |
+| `/embed`              | Interactive Discord embed builder with a live preview and script export|
+| `/auth/login`         | Real Discord OAuth2 sign-in (server-side code exchange, encrypted session) |
+| `/dashboard`          | Server overview: what Bore is configured with in that server           |
+| `/dashboard/general`  | Command prefix                                                         |
+| `/dashboard/welcome`  | Welcome messages                                                      |
+| `/dashboard/leave`    | Leave messages                                                        |
+| `/dashboard/boost`    | Boost messages                                                        |
+| `/dashboard/autoroles`| Auto roles assigned to new members                                     |
+| `/dashboard/aliases`  | Custom command shortcuts                                              |
+| `/dashboard/antinuke` | Anti-nuke thresholds, punishments, log channel and action window        |
+| `/dashboard/honeypot` | Honeypot channels, staff exemption, jail role and log channel          |
 
 ---
 
@@ -219,10 +227,104 @@ from base.managers.EmbedBuilder import EmbedBuilder
 content, embed, view = await EmbedBuilder.to_object(open("embed-script.txt").read())
 ```
 
-## 10. Testing
+## 10. The dashboard
+
+The dashboard is a real, authenticated application surface — not a mockup. It reads and
+writes the bot's own PostgreSQL tables, and every write goes through a server-side
+endpoint that checks the session, the user's Discord permissions and the value itself.
+
+**Modules** (each one backed by a table the bot already uses):
+
+| Module        | Table(s)                                              | Permission required |
+| ------------- | ----------------------------------------------------- | ------------------- |
+| General       | `prefix`                                              | Manage Messages     |
+| Welcome       | `welcome`                                             | Manage Messages     |
+| Leave         | `leave`                                               | Manage Messages     |
+| Boosts        | `boost`                                               | Manage Messages     |
+| Auto roles    | `autorole`                                            | Manage Roles        |
+| Aliases       | `aliases`                                             | Manage Server       |
+| Anti-nuke     | `antinuke_guild`, `antinuke_settings`                 | Manage Server       |
+| Honeypots     | `honeypots`, `honeypot_settings`                      | Administrator       |
+
+No table is created, altered or migrated by this project — the dashboard only reads and
+writes the schema the bot already defines in `base/schema/schema.sql`. Anything the bot
+stores that has no safe dashboard surface (warnings, blacklists, AFK, VoiceMaster, booster
+roles, fake permissions) is deliberately left out rather than faked.
+
+**How authorisation works**
+
+1. The session is verified server-side on every request (`readSession`).
+2. The requested guild must be in the signed-in user's own Discord guild list — a guild id
+   in the request body is never proof of access.
+3. The user's permission bitfield for that guild is read from Discord
+   (`GET /users/@me/guilds/{guild.id}`) and matched against the permission the module
+   needs. `ADMINISTRATOR` implies the rest.
+4. Channels and roles are validated against the guild's own channel and role lists before
+   they are saved.
+
+**Schema note — the `aliases` table**
+
+The bot's code and `base/schema/schema.sql` expect a column called `alias` on the
+`aliases` table:
+
+```sql
+SELECT * FROM aliases WHERE guild_id = $1 AND alias = $2
+INSERT INTO aliases (guild_id, alias, command) VALUES ($1, $2, $3)
+```
+
+A database created by an older bot build still has `name`/`invoke` instead, and
+`CREATE TABLE IF NOT EXISTS` never alters an existing table — so the bot's own alias commands
+fail there with `column "alias" does not exist`. The dashboard detects that layout and
+reports it instead of writing rows the bot could never read. The fix is an explicit,
+reversible migration in [`migrations/001_aliases_columns.sql`](migrations/001_aliases_columns.sql);
+it is **not** applied automatically, because the live database is not this project's to change
+without authorisation.
+
+**Endpoints**
+
+| Endpoint                                        | Purpose                              |
+| ----------------------------------------------- | ------------------------------------ |
+| `GET /api/auth/me`                              | The signed-in user's public profile  |
+| `POST /api/auth/logout`                         | Ends the session                     |
+| `GET /api/dashboard/guilds`                     | The user's guilds and permissions    |
+| `GET /api/dashboard/guilds/:id/channels`        | Channels for the pickers             |
+| `GET /api/dashboard/guilds/:id/roles`           | Roles for the pickers                |
+| `GET /api/dashboard/guilds/:id/config`          | Every module's stored configuration  |
+| `PATCH /api/dashboard/guilds/:id/config/:module`| Saves one module                     |
+
+The modules in the sidebar are generated from that list, so no dashboard section exists
+without a real endpoint behind it.
+
+## 11. Design language
+
+The interface is deliberately restrained: light blue and white, one bordered surface
+(`Panel`), hairline rules instead of nested cards, small type, and monospaced figures for
+anything technical (ids, latency, counts, syntax, timestamps).
+
+- **Type** — Inter for text, JetBrains Mono for identifiers and numbers. Headings are
+  18–26px, never the 40px+ display sizes a template would use.
+- **Surfaces** — a single border colour (`#E2E8F0`) and at most one shadow level. Gradients
+  are used only where they carry meaning (the bot mark).
+- **Density** — tables and definition rows instead of card grids; a command is one line,
+  not a tile.
+- **Status** — always a label plus a colour, never colour alone.
+- **Motion** — 150–200ms fades for menus and panels only; `prefers-reduced-motion` is
+  respected.
+
+## 12. Testing
 
 ```bash
 npm run test
+```
+
+There is also a live integration test that runs the dashboard handlers against the real
+bot database and the real bot API (Discord itself is mocked). It is skipped unless you ask
+for it:
+
+```bash
+BORE_INTEGRATION=1 \
+DATABASE_URL=... BOT_API_BASE_URL=... BOT_API_KEY=... \
+npx vitest run tests/dashboard-integration.test.ts
 ```
 
 Covers embed serialisation/parsing and validation, command search and category filters,
@@ -231,7 +333,7 @@ session encryption and protection, and React UI tests for the homepage, command
 directory (including the details dialog), status page, dashboard, embed builder,
 responsive navigation and the error states.
 
-## 11. Known gaps / required backend work
+## 13. Known gaps / required backend work
 
 | Item                                          | Status                                                                    |
 | --------------------------------------------- | ------------------------------------------------------------------------- |
@@ -242,7 +344,7 @@ responsive navigation and the error states.
 | Discord member counts                          | Only available with the `guilds.members.read` scope, which is not requested |
 | Rate limiting across serverless instances      | Per-instance only — use a shared store if stricter limits are required      |
 
-## 12. Credential hygiene
+## 14. Credential hygiene
 
 The bot source archive that was used to build this site contains **live credentials**
 (a bot token, a database password and a Lavalink password) committed in
