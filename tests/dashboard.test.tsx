@@ -20,7 +20,7 @@ const guilds = {
       icon: null,
       owner: true,
       memberCount: 1204,
-      permissions: '34359738832',
+      permissions: '34359747024',
       botInstalled: true,
     },
     {
@@ -191,5 +191,22 @@ describe('dashboard', () => {
 
     expect(await screen.findByText('Beta Server')).toBeInTheDocument()
     expect(screen.getByText('not installed')).toBeInTheDocument()
+  })
+  it('makes the controls read-only without the permission the module needs', async () => {
+    vi.stubGlobal(
+      'fetch',
+      mockApi({
+        '/api/dashboard/guilds/111/config': {
+          ...config,
+          guild: { ...guilds.guilds[0], permissions: '0' },
+        },
+      }),
+    )
+
+    renderApp('/dashboard/general')
+
+    const input = await screen.findByLabelText('Command prefix')
+    await waitFor(() => expect(input).toBeDisabled())
+    expect(screen.getByText(/Manage Messages permission/)).toBeInTheDocument()
   })
 })

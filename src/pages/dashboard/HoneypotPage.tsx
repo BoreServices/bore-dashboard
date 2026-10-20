@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { ModuleHeader, ModuleSkeleton, SaveBar, useUnsavedChanges } from '../../components/dashboard/ModuleHeader'
 import { useDashboard } from '../../components/dashboard/DashboardContext'
 import { ChannelSelect, RoleSelect } from '../../components/dashboard/Pickers'
-import { useModuleMutation } from '../../lib/dashboard'
+import { MODULE_PERMISSIONS, useModuleMutation } from '../../lib/dashboard'
 import { Button } from '../../components/ui/Button'
 import { Select, SettingRow } from '../../components/ui/Field'
 import { Table, Td, Th, Tr } from '../../components/ui/Table'
@@ -24,9 +24,9 @@ export function HoneypotPage() {
     '/dashboard/honeypot',
   )
 
-  const { config, configPending, configError, refreshConfig, selectedGuildId, channels } =
-    useDashboard()
+  const {  config, configPending, configError, refreshConfig, selectedGuildId, channels, can } = useDashboard()
   const mutation = useModuleMutation(selectedGuildId)
+  const canManage = can(MODULE_PERMISSIONS.honeypot)
 
   const [staffRoleId, setStaffRoleId] = useState<string | null>(null)
   const [logChannelId, setLogChannelId] = useState<string | null>(null)
@@ -123,6 +123,14 @@ export function HoneypotPage() {
         description="Channels that look like normal conversation but punish anyone who posts in them."
       />
 
+      {!canManage ? (
+        <Notice tone="warning" className="mb-4">
+          You need the Administrator permission in this server to change these settings. The values below are
+          read-only.
+        </Notice>
+      ) : null}
+
+
       <div className="overflow-hidden rounded border border-line bg-surface">
         <SettingRow
           label="Staff exemption"
@@ -130,7 +138,12 @@ export function HoneypotPage() {
           description="Members with this role are never punished by a honeypot."
         >
           <div className="max-w-sm">
-            <RoleSelect id="honeypot-staff" value={staffRoleId} onChange={setStaffRoleId} />
+            <RoleSelect
+              id="honeypot-staff"
+              disabled={!canManage}
+              value={staffRoleId}
+              onChange={setStaffRoleId}
+            />
           </div>
         </SettingRow>
 
@@ -142,6 +155,7 @@ export function HoneypotPage() {
           <div className="max-w-sm">
             <ChannelSelect
               id="honeypot-log"
+              disabled={!canManage}
               value={logChannelId}
               onChange={setLogChannelId}
               allowNone
@@ -158,6 +172,7 @@ export function HoneypotPage() {
           <div className="max-w-sm">
             <RoleSelect
               id="honeypot-jail"
+              disabled={!canManage}
               value={jailRoleId}
               onChange={setJailRoleId}
               requireAssignable
@@ -192,8 +207,9 @@ export function HoneypotPage() {
                       <button
                         type="button"
                         onClick={() => removeChannel(entry.channelId)}
+                        disabled={!canManage}
                         aria-label={`Remove the honeypot channel ${entry.channelName ?? ''}`}
-                        className="rounded p-1.5 text-ink-muted transition-colors hover:bg-danger/5 hover:text-danger"
+                        className="rounded p-1.5 text-ink-muted transition-colors hover:bg-danger/5 hover:text-danger disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
                       >
                         <Trash2 className="h-3 w-3" aria-hidden />
                       </button>
@@ -217,6 +233,7 @@ export function HoneypotPage() {
             </label>
             <ChannelSelect
               id="honeypot-channel"
+              disabled={!canManage}
               value={newChannelId}
               onChange={setNewChannelId}
               noneLabel="Select a channel"
@@ -241,7 +258,7 @@ export function HoneypotPage() {
             size="sm"
             onClick={addChannel}
             loading={mutation.isPending}
-            disabled={!newChannelId || !channels.length}
+            disabled={!canManage || !newChannelId || !channels.length}
           >
             <Plus className="h-3 w-3" aria-hidden />
             Add channel

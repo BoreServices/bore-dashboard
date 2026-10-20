@@ -133,7 +133,7 @@ export function OverviewPage() {
   }
   if (!canManageGuild && !canManageMessages) {
     warnings.push({
-      text: 'You do not have Manage Server or Manage Messages here, so the settings on this page are read-only.',
+      text: 'You do not have Manage Server or Manage Messages here, so the settings for this server are read-only.',
     })
   }
   if (config.antinuke.enabled && !config.antinuke.logChannelId) {

@@ -73,7 +73,7 @@ export function LoginPage() {
             {[
               'Requests identify and guilds only — never bot management scopes.',
               'Your session lives in an encrypted HTTP-only cookie; tokens never reach the browser.',
-              'The dashboard reads your servers and their settings. It does not change them yet.',
+              'The dashboard shows the servers you manage and edits the settings Bore already stores for them.',
             ].map((item) => (
               <li key={item} className="flex items-start gap-2 text-2xs leading-relaxed text-ink-muted">
                 <ShieldCheck className="mt-0.5 h-3 w-3 shrink-0 text-brand-500" aria-hidden />

@@ -24,6 +24,23 @@ export const PERMISSIONS = {
   manage_roles: 268435456,
 } as const
 
+export type PermissionName = keyof typeof PERMISSIONS
+
+/**
+ * The permission each dashboard module needs, mirroring the check the bot's
+ * own command makes. The server enforces the same list.
+ */
+export const MODULE_PERMISSIONS = {
+  prefix: 'manage_messages',
+  welcome: 'manage_messages',
+  leave: 'manage_messages',
+  boost: 'manage_messages',
+  autoroles: 'manage_roles',
+  aliases: 'manage_guild',
+  antinuke: 'manage_guild',
+  honeypot: 'administrator',
+} as const satisfies Record<string, PermissionName>
+
 export function hasPermission(permissions: string | undefined | null, flag: number): boolean {
   if (!permissions) return false
   try {

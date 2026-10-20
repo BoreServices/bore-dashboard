@@ -1,22 +1,26 @@
 import { useEffect, useMemo, useState } from 'react'
-import { NavLink, Navigate, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   Braces,
   Command as CommandIcon,
   Gauge,
+  LogOut,
   Megaphone,
   MessageSquare,
   ShieldAlert,
   SlidersHorizontal,
   Sparkles,
-  UserRound,
+  Siren,
+  UserMinus,
+  UserPlus,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { Logo } from '../layout/Logo'
 import { AccountMenu } from './AccountMenu'
 import { GuildSelect } from './GuildSelect'
 import { DashboardProvider, useDashboard } from './DashboardContext'
-import { useSessionQuery } from '../../lib/queries'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys, useSessionQuery } from '../../lib/queries'
 
 type NavItem = {
   to: string
@@ -36,9 +40,9 @@ const sections: { label: string; items: NavItem[] }[] = [
     items: [
       { to: '/dashboard/general', end: false, label: 'General', icon: SlidersHorizontal },
       { to: '/dashboard/welcome', end: false, label: 'Welcome', icon: Sparkles },
-      { to: '/dashboard/leave', end: false, label: 'Leave', icon: UserRound },
+      { to: '/dashboard/leave', end: false, label: 'Leave', icon: UserMinus },
       { to: '/dashboard/boost', end: false, label: 'Boosts', icon: Megaphone },
-      { to: '/dashboard/autoroles', end: false, label: 'Auto roles', icon: UserRound },
+      { to: '/dashboard/autoroles', end: false, label: 'Auto roles', icon: UserPlus },
       { to: '/dashboard/aliases', end: false, label: 'Aliases', icon: MessageSquare },
     ],
   },
@@ -46,7 +50,7 @@ const sections: { label: string; items: NavItem[] }[] = [
     label: 'Protection',
     items: [
       { to: '/dashboard/antinuke', end: false, label: 'Anti-nuke', icon: ShieldAlert },
-      { to: '/dashboard/honeypot', end: false, label: 'Honeypots', icon: ShieldAlert },
+      { to: '/dashboard/honeypot', end: false, label: 'Honeypots', icon: Siren },
     ],
   },
   {
@@ -99,6 +103,43 @@ function SidebarLink({
       <Icon className="h-3.5 w-3.5 shrink-0 text-ink-faint" aria-hidden />
       {label}
     </NavLink>
+  )
+}
+
+/**
+ * The signed-in account, with the way out. It sits at the bottom of the
+ * sidebar so signing out never hides behind a menu.
+ */
+function AccountBlock() {
+  const { data: session } = useSessionQuery()
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  if (!session) return null
+
+  const signOut = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } finally {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.session })
+      navigate('/')
+    }
+  }
+
+  return (
+    <div className="border-t border-line px-3 py-3">
+      <p className="truncate text-xs font-medium text-ink">
+        {session.user.globalName || session.user.username}
+      </p>
+      <p className="truncate font-mono text-2xs text-ink-faint">{session.user.id}</p>
+      <button
+        type="button"
+        onClick={signOut}
+        className="mt-2 inline-flex items-center gap-1.5 text-xs text-ink-muted transition-colors hover:text-danger"
+      >
+        <LogOut className="h-3 w-3" aria-hidden />
+        Sign out
+      </button>
+    </div>
   )
 }
 
@@ -189,22 +230,25 @@ function Shell() {
 
       <div className="flex flex-1">
         <aside className="hidden w-52 shrink-0 border-r border-line bg-surface lg:block">
-          <nav aria-label="Dashboard" className="sticky top-12 space-y-5 px-2 py-4">
-            {sections.map((section) => (
-              <div key={section.label}>
-                <p className="px-2 pb-1.5 font-mono text-2xs uppercase tracking-[0.12em] text-ink-faint">
-                  {section.label}
-                </p>
-                <ul className="space-y-0.5">
-                  {section.items.map((item) => (
-                    <li key={item.to}>
-                      <SidebarLink {...item} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </nav>
+          <div className="sticky top-12 flex min-h-[calc(100vh-3rem)] flex-col">
+            <nav aria-label="Dashboard" className="flex-1 space-y-5 px-2 py-4">
+              {sections.map((section) => (
+                <div key={section.label}>
+                  <p className="px-2 pb-1.5 font-mono text-2xs uppercase tracking-[0.12em] text-ink-faint">
+                    {section.label}
+                  </p>
+                  <ul className="space-y-0.5">
+                    {section.items.map((item) => (
+                      <li key={item.to}>
+                        <SidebarLink {...item} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </nav>
+            <AccountBlock />
+          </div>
         </aside>
 
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6">

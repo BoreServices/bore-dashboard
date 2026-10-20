@@ -1,10 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
+  hasPermission,
+  PERMISSIONS,
   useGuildChannelsQuery,
   useGuildConfigQuery,
   useGuildRolesQuery,
   useGuildsQuery,
 } from '../../lib/dashboard'
+import type { PermissionName } from '../../lib/dashboard'
 import type { DashboardChannel, DashboardGuild, DashboardRole, GuildConfig } from '../../types/dashboard'
 
 const STORAGE_KEY = 'bore.dashboard.guild'
@@ -27,6 +30,8 @@ type DashboardContextValue = {
   rolesPending: boolean
   /** The highest role the bot holds; roles at or above it cannot be assigned. */
   botRolePosition: number
+  /** Whether the signed-in user holds a permission in the selected server. */
+  can: (permission: PermissionName) => boolean
 }
 
 const DashboardContext = createContext<DashboardContextValue | null>(null)
@@ -81,6 +86,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       roles: rolesQuery.data?.roles ?? [],
       rolesPending: rolesQuery.isPending,
       botRolePosition: rolesQuery.data?.botRolePosition ?? Number.MAX_SAFE_INTEGER,
+      can: (permission: PermissionName) =>
+        hasPermission(configQuery.data?.guild.permissions, PERMISSIONS[permission]),
     }),
     [
       guilds,

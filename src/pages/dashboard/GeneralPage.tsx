@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { ModuleHeader, SaveBar, useUnsavedChanges } from '../../components/dashboard/ModuleHeader'
 import { useDashboard } from '../../components/dashboard/DashboardContext'
-import { useModuleMutation } from '../../lib/dashboard'
+import { MODULE_PERMISSIONS, useModuleMutation } from '../../lib/dashboard'
 import { Input, SettingRow } from '../../components/ui/Field'
 import { EmptyState, ErrorState, Notice } from '../../components/ui/States'
 import { Skeleton } from '../../components/ui/Skeleton'
@@ -11,8 +11,9 @@ import { usePageMeta } from '../../lib/usePageMeta'
 export function GeneralPage() {
   usePageMeta('General settings · Bore', 'Command prefix and general server options.', '/dashboard/general')
 
-  const { config, configPending, configError, refreshConfig, selectedGuildId } = useDashboard()
+  const {  config, configPending, configError, refreshConfig, selectedGuildId, can } = useDashboard()
   const mutation = useModuleMutation(selectedGuildId)
+  const canManage = can(MODULE_PERMISSIONS.prefix)
 
   const [prefix, setPrefix] = useState('')
   const [savedPrefix, setSavedPrefix] = useState('')
@@ -76,6 +77,14 @@ export function GeneralPage() {
         description="The prefix every command in this server responds to."
       />
 
+      {!canManage ? (
+        <Notice tone="warning" className="mb-4">
+          You need the Manage Messages permission in this server to change these settings. The values below are
+          read-only.
+        </Notice>
+      ) : null}
+
+
       <div className="overflow-hidden rounded border border-line bg-surface">
         <SettingRow
           label="Command prefix"
@@ -85,6 +94,7 @@ export function GeneralPage() {
           <div className="flex items-center gap-2">
             <Input
               id="prefix"
+              disabled={!canManage}
               value={prefix}
               maxLength={7}
               placeholder=","

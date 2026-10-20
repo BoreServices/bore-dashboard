@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { ModuleHeader, ModuleSkeleton } from '../../components/dashboard/ModuleHeader'
 import { useDashboard } from '../../components/dashboard/DashboardContext'
 import { ChannelSelect } from '../../components/dashboard/Pickers'
-import { useModuleMutation } from '../../lib/dashboard'
+import { MODULE_PERMISSIONS, useModuleMutation } from '../../lib/dashboard'
 import { Button } from '../../components/ui/Button'
 import { Textarea } from '../../components/ui/Field'
 import { Table, Td, Th, Tr } from '../../components/ui/Table'
@@ -33,9 +33,9 @@ const copy: Record<MessageModule, { title: string; description: string }> = {
 export function MessagesPage({ module }: { module: MessageModule }) {
   usePageMeta(`${copy[module].title} · Bore`, copy[module].description, `/dashboard/${module}`)
 
-  const { config, configPending, configError, refreshConfig, selectedGuildId, channels } =
-    useDashboard()
+  const {  config, configPending, configError, refreshConfig, selectedGuildId, channels, can } = useDashboard()
   const mutation = useModuleMutation(selectedGuildId)
+  const canManage = can(MODULE_PERMISSIONS.welcome)
 
   const [channelId, setChannelId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
@@ -113,6 +113,14 @@ export function MessagesPage({ module }: { module: MessageModule }) {
     <div className="max-w-3xl">
       <ModuleHeader title={copy[module].title} description={copy[module].description} />
 
+      {!canManage ? (
+        <Notice tone="warning" className="mb-4">
+          You need the Manage Messages permission in this server to change these settings. The values below are
+          read-only.
+        </Notice>
+      ) : null}
+
+
       {entries.length ? (
         <div className="overflow-hidden rounded border border-line bg-surface">
           <Table>
@@ -143,14 +151,15 @@ export function MessagesPage({ module }: { module: MessageModule }) {
                   </Td>
                   <Td>
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => startEdit(entry)}>
+                      <Button variant="ghost" size="sm" disabled={!canManage} onClick={() => startEdit(entry)}>
                         Edit
                       </Button>
                       <button
                         type="button"
                         onClick={() => remove(entry.channelId)}
+                        disabled={!canManage}
                         aria-label={`Remove the message for ${entry.channelName ?? 'this channel'}`}
-                        className="rounded p-1.5 text-ink-muted transition-colors hover:bg-danger/5 hover:text-danger"
+                        className="rounded p-1.5 text-ink-muted transition-colors hover:bg-danger/5 hover:text-danger disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
                       >
                         <Trash2 className="h-3 w-3" aria-hidden />
                       </button>
@@ -178,12 +187,18 @@ export function MessagesPage({ module }: { module: MessageModule }) {
           <div className="grid gap-3 sm:grid-cols-[14rem_1fr] sm:items-start">
             <label className="block space-y-1.5">
               <span className="text-xs font-medium text-ink-soft">Channel</span>
-              <ChannelSelect value={channelId} onChange={setChannelId} id="message-channel" />
+              <ChannelSelect
+                value={channelId}
+                onChange={setChannelId}
+                id="message-channel"
+                disabled={!canManage}
+              />
             </label>
 
             <div className="space-y-1.5">
               <Textarea
                 label="Message"
+                disabled={!canManage}
                 rows={4}
                 value={message}
                 maxLength={4000}
@@ -207,7 +222,7 @@ export function MessagesPage({ module }: { module: MessageModule }) {
               size="sm"
               onClick={save}
               loading={mutation.isPending}
-              disabled={!channels.length}
+              disabled={!canManage || !channels.length}
             >
               <Plus className="h-3 w-3" aria-hidden />
               {editing ? 'Save changes' : 'Add message'}

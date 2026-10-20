@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { ModuleHeader, ModuleSkeleton, SaveBar, useUnsavedChanges } from '../../components/dashboard/ModuleHeader'
 import { useDashboard } from '../../components/dashboard/DashboardContext'
 import { ChannelSelect } from '../../components/dashboard/Pickers'
-import { useModuleMutation } from '../../lib/dashboard'
+import { MODULE_PERMISSIONS, useModuleMutation } from '../../lib/dashboard'
 import { Input, Select, SettingRow, Switch } from '../../components/ui/Field'
 import { Button } from '../../components/ui/Button'
 import { Table, Td, Th, Tr } from '../../components/ui/Table'
@@ -49,8 +49,9 @@ export function AntiNukePage() {
     '/dashboard/antinuke',
   )
 
-  const { config, configPending, configError, refreshConfig, selectedGuildId } = useDashboard()
+  const {  config, configPending, configError, refreshConfig, selectedGuildId, can } = useDashboard()
   const mutation = useModuleMutation(selectedGuildId)
+  const canManage = can(MODULE_PERMISSIONS.antinuke)
 
   const [enabled, setEnabled] = useState(true)
   const [logChannelId, setLogChannelId] = useState<string | null>(null)
@@ -170,6 +171,14 @@ export function AntiNukePage() {
         description="Punishes members who perform destructive actions in bursts. Each module has its own punishment and threshold."
       />
 
+      {!canManage ? (
+        <Notice tone="warning" className="mb-4">
+          You need the Manage Server permission in this server to change these settings. The values below are
+          read-only.
+        </Notice>
+      ) : null}
+
+
       <div className="overflow-hidden rounded border border-line bg-surface">
         <SettingRow
           label="Protection"
@@ -177,6 +186,7 @@ export function AntiNukePage() {
         >
           <div className="max-w-sm">
             <Switch
+              disabled={!canManage}
               checked={enabled}
               onChange={setEnabled}
               label={enabled ? 'Enabled' : 'Disabled'}
@@ -193,6 +203,7 @@ export function AntiNukePage() {
           <div className="max-w-sm">
             <ChannelSelect
               id="antinuke-log"
+              disabled={!canManage}
               value={logChannelId}
               onChange={setLogChannelId}
               allowNone
@@ -208,6 +219,7 @@ export function AntiNukePage() {
         >
           <Input
             id="antinuke-window"
+            disabled={!canManage}
             type="number"
             min={1}
             max={60}
@@ -242,6 +254,7 @@ export function AntiNukePage() {
                   </Td>
                   <Td>
                     <Select
+                      disabled={!canManage}
                       value={entry.punishment}
                       aria-label={`Punishment for ${entry.module}`}
                       onChange={(event) => updateModule(entry.module, { punishment: event.target.value })}
@@ -259,6 +272,7 @@ export function AntiNukePage() {
                       <span className="font-mono text-base text-ink-faint">1</span>
                     ) : (
                       <Input
+                        disabled={!canManage}
                         type="number"
                         min={1}
                         max={25}
@@ -275,8 +289,9 @@ export function AntiNukePage() {
                     <button
                       type="button"
                       onClick={() => disarmModule(entry.module)}
+                        disabled={!canManage}
                       aria-label={`Disarm ${entry.module}`}
-                      className="rounded p-1.5 text-ink-muted transition-colors hover:bg-danger/5 hover:text-danger"
+                      className="rounded p-1.5 text-ink-muted transition-colors hover:bg-danger/5 hover:text-danger disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
                     >
                       <Trash2 className="h-3 w-3" aria-hidden />
                     </button>
@@ -296,6 +311,7 @@ export function AntiNukePage() {
           <div className="w-full max-w-[14rem] space-y-1.5">
             <Select
               label="Action"
+              disabled={!canManage}
               value={newModule}
               onChange={(event) => setNewModule(event.target.value)}
             >
@@ -310,6 +326,7 @@ export function AntiNukePage() {
           <div className="w-full max-w-[12rem] space-y-1.5">
             <Select
               label="Punishment"
+              disabled={!canManage}
               value={newPunishment}
               onChange={(event) => setNewPunishment(event.target.value)}
             >
@@ -323,6 +340,7 @@ export function AntiNukePage() {
           <div className="w-24 space-y-1.5">
             <Input
               label="Threshold"
+              disabled={!canManage}
               type="number"
               min={1}
               max={25}
@@ -331,7 +349,12 @@ export function AntiNukePage() {
               className="font-mono"
             />
           </div>
-          <Button variant="secondary" size="md" onClick={armModule} disabled={!newModule}>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={armModule}
+            disabled={!canManage || !newModule}
+          >
             <Plus className="h-3 w-3" aria-hidden />
             Arm
           </Button>

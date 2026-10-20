@@ -3,7 +3,7 @@ import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { ModuleHeader, ModuleSkeleton } from '../../components/dashboard/ModuleHeader'
 import { useDashboard } from '../../components/dashboard/DashboardContext'
-import { useModuleMutation } from '../../lib/dashboard'
+import { MODULE_PERMISSIONS, useModuleMutation } from '../../lib/dashboard'
 import { useCommandsQuery } from '../../lib/queries'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Field'
@@ -18,8 +18,9 @@ export function AliasesPage() {
     '/dashboard/aliases',
   )
 
-  const { config, configPending, configError, refreshConfig, selectedGuildId } = useDashboard()
+  const {  config, configPending, configError, refreshConfig, selectedGuildId, can } = useDashboard()
   const mutation = useModuleMutation(selectedGuildId)
+  const canManage = can(MODULE_PERMISSIONS.aliases)
   const commands = useCommandsQuery()
 
   const [alias, setAlias] = useState('')
@@ -79,6 +80,14 @@ export function AliasesPage() {
         description="Short commands that run another Bore command. The alias cannot shadow a real command."
       />
 
+      {!canManage ? (
+        <Notice tone="warning" className="mb-4">
+          You need the Manage Server permission in this server to change these settings. The values below are
+          read-only.
+        </Notice>
+      ) : null}
+
+
       {config.warnings?.map((warning) => (
         <Notice key={warning} tone="warning" className="mb-4" title="Schema migration needed">
           {warning}
@@ -105,8 +114,9 @@ export function AliasesPage() {
                       <button
                         type="button"
                         onClick={() => remove(entry.alias)}
+                        disabled={!canManage}
                         aria-label={`Remove the alias ${entry.alias}`}
-                        className="rounded p-1.5 text-ink-muted transition-colors hover:bg-danger/5 hover:text-danger"
+                        className="rounded p-1.5 text-ink-muted transition-colors hover:bg-danger/5 hover:text-danger disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
                       >
                         <Trash2 className="h-3 w-3" aria-hidden />
                       </button>
@@ -134,6 +144,7 @@ export function AliasesPage() {
           <div className="w-full max-w-[12rem] space-y-1.5">
             <Input
               label="Alias"
+              disabled={!canManage}
               value={alias}
               maxLength={32}
               placeholder="mod"
@@ -143,6 +154,7 @@ export function AliasesPage() {
           <div className="w-full max-w-[16rem] space-y-1.5">
             <Input
               label="Command"
+              disabled={!canManage}
               list="bore-commands"
               value={command}
               placeholder="purge"
@@ -159,7 +171,7 @@ export function AliasesPage() {
             size="sm"
             onClick={add}
             loading={mutation.isPending}
-            disabled={!alias.trim() || !command.trim()}
+            disabled={!canManage || !alias.trim() || !command.trim()}
           >
             <Plus className="h-3 w-3" aria-hidden />
             Add alias

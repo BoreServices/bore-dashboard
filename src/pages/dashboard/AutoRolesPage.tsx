@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { ModuleHeader, ModuleSkeleton } from '../../components/dashboard/ModuleHeader'
 import { useDashboard } from '../../components/dashboard/DashboardContext'
 import { RoleSelect } from '../../components/dashboard/Pickers'
-import { useModuleMutation } from '../../lib/dashboard'
+import { MODULE_PERMISSIONS, useModuleMutation } from '../../lib/dashboard'
 import { Button } from '../../components/ui/Button'
 import { Table, Td, Th, Tr } from '../../components/ui/Table'
 import { EmptyState, ErrorState, Notice } from '../../components/ui/States'
@@ -17,9 +17,9 @@ export function AutoRolesPage() {
     '/dashboard/autoroles',
   )
 
-  const { config, configPending, configError, refreshConfig, selectedGuildId, roles } =
-    useDashboard()
+  const {  config, configPending, configError, refreshConfig, selectedGuildId, roles, can } = useDashboard()
   const mutation = useModuleMutation(selectedGuildId)
+  const canManage = can(MODULE_PERMISSIONS.autoroles)
   const [roleId, setRoleId] = useState<string | null>(null)
 
   if (configPending) return <ModuleSkeleton />
@@ -70,6 +70,14 @@ export function AutoRolesPage() {
         description="Roles Bore gives to a member when they join. Only roles below the bot's highest role can be assigned."
       />
 
+      {!canManage ? (
+        <Notice tone="warning" className="mb-4">
+          You need the Manage Roles permission in this server to change these settings. The values below are
+          read-only.
+        </Notice>
+      ) : null}
+
+
       {config.autoroles.length ? (
         <div className="overflow-hidden rounded border border-line bg-surface">
           <Table>
@@ -89,8 +97,9 @@ export function AutoRolesPage() {
                     <button
                       type="button"
                       onClick={() => remove(entry.roleId)}
+                        disabled={!canManage}
                       aria-label={`Remove ${entry.roleName ?? 'auto role'}`}
-                      className="rounded p-1.5 text-ink-muted transition-colors hover:bg-danger/5 hover:text-danger"
+                      className="rounded p-1.5 text-ink-muted transition-colors hover:bg-danger/5 hover:text-danger disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
                     >
                       <Trash2 className="h-3 w-3" aria-hidden />
                     </button>
@@ -120,6 +129,7 @@ export function AutoRolesPage() {
             </label>
             <RoleSelect
               id="autorole"
+              disabled={!canManage}
               value={roleId}
               onChange={setRoleId}
               requireAssignable
@@ -132,7 +142,7 @@ export function AutoRolesPage() {
             size="sm"
             onClick={add}
             loading={mutation.isPending}
-            disabled={!roleId}
+            disabled={!canManage || !roleId}
           >
             <Plus className="h-3 w-3" aria-hidden />
             Add role
