@@ -122,6 +122,7 @@ export function AutoRolesPage() {
               id="autorole"
               value={roleId}
               onChange={setRoleId}
+              requireAssignable
               noneLabel="Select a role"
               allowNone={false}
             />

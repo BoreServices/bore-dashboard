@@ -153,10 +153,15 @@ export function HoneypotPage() {
         <SettingRow
           label="Jail role"
           htmlFor="honeypot-jail"
-          description="Applied when the jail punishment is used."
+          description="Applied when the jail punishment is used. It has to sit below Bore's own role, or Discord refuses to hand it out."
         >
           <div className="max-w-sm">
-            <RoleSelect id="honeypot-jail" value={jailRoleId} onChange={setJailRoleId} />
+            <RoleSelect
+              id="honeypot-jail"
+              value={jailRoleId}
+              onChange={setJailRoleId}
+              requireAssignable
+            />
           </div>
         </SettingRow>
       </div>

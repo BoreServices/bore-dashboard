@@ -87,6 +87,14 @@ The bot ships a small Flask service (`main.py` in the bot repository) that expos
 | `GET /status`   | Shard health and runtime information          |
 | `GET /stats`    | Aggregate member and server counts            |
 | `GET /shards`   | Shard to guild mappings                       |
+| `GET /guilds`   | The servers the bot is a member of            |
+| `GET /guilds/<id>/channels` | Channels of one server, as the bot sees them |
+| `GET /guilds/<id>/roles`    | Roles of one server plus the bot's role position |
+
+The last three were added for the dashboard: they are how the site knows whether
+Bore is installed in a server and how it populates the channel and role pickers.
+Discord no longer serves channel and role lists to a user token, and the bot already
+has both in its cache.
 
 This service runs **next to the Discord bot process** (it needs access to the live bot
 object), so it must be deployed separately from Vercel — for example on the same host as
