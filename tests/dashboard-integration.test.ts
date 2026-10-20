@@ -113,7 +113,7 @@ const discordGuilds = [
     name: 'scratch guild',
     icon: null,
     owner: false,
-    permissions: '8192',
+    permissions: '8224',
     approximate_member_count: 1,
   },
   {
@@ -295,5 +295,44 @@ describe.skipIf(!INTEGRATION)('dashboard against the live bot database', () => {
     await guildConfigModuleHandler(request(null), cleanup)
     expect(cleanup.statusCode, cleanup.body).toBe(200)
     expect(JSON.parse(cleanup.body).config).toBeNull()
+  })
+  it('arms and disarms an anti-nuke module', async () => {
+    const request = (body: unknown) =>
+      mockRequest(
+        `/api/dashboard/guilds/${SCRATCH_GUILD_ID}/config/antinuke`,
+        sessionCookie(),
+        'PATCH',
+        JSON.stringify(body),
+      )
+
+    const arm = mockResponse()
+    await guildConfigModuleHandler(
+      request({ modules: [{ module: 'ban', punishment: 'ban', threshold: 4 }] }),
+      arm,
+    )
+    expect(arm.statusCode, arm.body).toBe(200)
+
+    const read = mockResponse()
+    await guildConfigHandler(
+      mockRequest(`/api/dashboard/guilds/${SCRATCH_GUILD_ID}/config`, sessionCookie()),
+      read,
+    )
+    expect(read.statusCode, read.body).toBe(200)
+    const armed = JSON.parse(read.body).antinuke.modules
+    expect(armed).toEqual([{ module: 'ban', punishment: 'ban', threshold: 4 }])
+
+    const disarm = mockResponse()
+    await guildConfigModuleHandler(
+      request({ modules: [{ module: 'ban', enabled: false }] }),
+      disarm,
+    )
+    expect(disarm.statusCode, disarm.body).toBe(200)
+
+    const readBack = mockResponse()
+    await guildConfigHandler(
+      mockRequest(`/api/dashboard/guilds/${SCRATCH_GUILD_ID}/config`, sessionCookie()),
+      readBack,
+    )
+    expect(JSON.parse(readBack.body).antinuke.modules).toEqual([])
   })
 })
