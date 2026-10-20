@@ -1,4 +1,5 @@
 import type { Plugin } from 'vite'
+import { loadEnv } from 'vite'
 import { routes } from './api/_routes'
 
 /**
@@ -8,6 +9,14 @@ import { routes } from './api/_routes'
 export function apiDevServer(): Plugin {
   return {
     name: 'bore-api-dev-server',
+    configResolved(config) {
+      // The API handlers read process.env directly, so the .env files have to
+      // be loaded into it for local development.
+      const loaded = loadEnv(config.mode, config.root, '')
+      for (const [key, value] of Object.entries(loaded)) {
+        if (process.env[key] === undefined) process.env[key] = value
+      }
+    },
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const path = (req.url ?? '').split('?')[0]

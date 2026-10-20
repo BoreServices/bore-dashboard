@@ -35,6 +35,8 @@ npm run dev                    # http://localhost:5173
 through a small Vite plugin (`vite-plugin-api.ts`), so the frontend can be developed
 against real API routes without a Vercel account. The route table lives in
 `api/_routes.ts` and is shared between the dev server and the deployed functions.
+The dev plugin also loads `.env.local` into `process.env`, so the API handlers pick up
+`BOT_API_BASE_URL`, `BOT_API_KEY` and the rest locally.
 
 Other scripts:
 
