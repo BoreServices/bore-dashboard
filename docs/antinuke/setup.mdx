@@ -1,0 +1,86 @@
+---
+title: AntiNuke Setup
+description: Configure antinuke to match your server needs.
+---
+
+<Callout type="info">
+  Replace ``[prefix]`` with your own prefix. Run ``@bore#6621 prefix`` to see your server's active prefixes. The default prefix is ``;``.
+</Callout>
+
+AntiNuke is bore's server protection system designed to detect and respond to coordinated destructive actions in real time. Whether a compromised admin account starts mass banning members, a rogue bot begins deleting channels, or an attacker strips roles and floods webhooks — AntiNuke catches it and acts before the damage becomes irreversible.
+These work within all moderation commands if setup, it will prevent users from using bore to carry out attacks too.
+
+Each module operates independently with its own configurable threshold, time window, and punishment, giving you fine-grained control over how aggressively your server is protected.
+
+The default for every module is 3 modifications, with the punishment ban, and the timeframe being an hour.
+
+## Antinuke Configuration
+
+To view the server configuration, run the following command:
+
+```python
+[prefix]antinuke configuration
+```
+
+<Frame>
+  <img src="/img/antinuke/examples/antinuke-config.png" alt="AntiNuke Configuration" width="600" />
+</Frame>
+
+## AntiNuke Trust
+
+Give other users the ability to modify antinuke settings.
+
+<Callout type="warning">
+  It is not recommended to hand this out because it allows members to run various of dangerous commands and modify the settings of the antinuke system.
+  If the user decides to be malicious, bore cannot help you in anyway if they have this.
+</Callout>
+
+To give another member antinuke trust, run the following command:
+
+```python
+[prefix]antinuke trust @member
+```
+
+<Frame>
+  <img src="/img/antinuke/examples/trust/antinuke-trust-1.png" alt="AntiNuke Trust Example" width="600" />
+</Frame>
+
+To remove their antinuke trust, run the command again:
+
+```python
+[prefix]antinuke trust @member
+```
+
+<Frame>
+  <img src="/img/antinuke/examples/trust/antinuke-trust-2.png" alt="AntiNuke Trust Example" width="600" />
+</Frame>
+
+## AntiNuke Whitelist
+
+Whitelist other members from triggering the antinuke system.
+
+<Callout type="warning">
+  Similarly to antinuke trust, it is not recommended to give this out to anyone you don't trust. 
+  While it is not as dangerous, if the user adds a bot, bore will ignore the addition. 
+  Be mindful who you give this out to.
+</Callout>
+
+To give another member antinuke whitelist, run the following command:
+
+```python
+[prefix]antinuke whitelist @member
+```
+
+<Frame>
+  <img src="/img/antinuke/examples/whitelist/antinuke-whitelist-1.png" alt="AntiNuke Whitelist Example" width="600" />
+</Frame>
+
+To remove their antinuke whitelist, run the command again:
+
+```python
+[prefix]antinuke whitelist @member
+```
+
+<Frame>
+  <img src="/img/antinuke/examples/whitelist/antinuke-whitelist-2.png" alt="AntiNuke Whitelist Example" width="600" />
+</Frame>
