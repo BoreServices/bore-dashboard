@@ -152,7 +152,7 @@ export default function VoiceMasterButtons({ children }: { children?: React.Reac
         <div className="vm-response" style={{ animation: 'vm-fade-in 0.3s ease', opacity: responseFading ? 0 : 1, transition: 'opacity 0.4s ease' }}>
           <div className="vm-response-inner">
             <Image src="/img/context/approved.webp" alt="" width={20} height={20} className="vm-response-check" />
-            <span dangerouslySetInnerHTML={{ __html: `<span style="color:#c9cdfb;background:rgba(88,101,242,0.3);border-radius:3px;padding:0 2px">@mercy</span>: ${active.message}` }} />
+            <span dangerouslySetInnerHTML={{ __html: `<span style="color:#c9cdfb;background:rgba(88,101,242,0.3);border-radius:3px;padding:0 2px">@voby</span>: ${active.message}` }} />
           </div>
           <ResponseMeta onDismiss={dismiss} />
         </div>
@@ -161,7 +161,7 @@ export default function VoiceMasterButtons({ children }: { children?: React.Reac
       {active?.type === 'dropdown' && !selectedActivity && (
         <div className="vm-response" style={{ animation: 'vm-fade-in 0.3s ease', opacity: responseFading ? 0 : 1, transition: 'opacity 0.4s ease' }}>
           <div className="vm-response-inner">
-            <span dangerouslySetInnerHTML={{ __html: `<span style="color:#c9cdfb;background:rgba(88,101,242,0.3);border-radius:3px;padding:0 2px">@mercy</span>: ${active.message}` }} />
+            <span dangerouslySetInnerHTML={{ __html: `<span style="color:#c9cdfb;background:rgba(88,101,242,0.3);border-radius:3px;padding:0 2px">@voby</span>: ${active.message}` }} />
           </div>
           <div className="vm-dropdown-wrap">
             <div className="vm-dropdown-toggle" onClick={() => setDropdownOpen(!dropdownOpen)}>
@@ -229,7 +229,7 @@ export default function VoiceMasterButtons({ children }: { children?: React.Reac
                     <div style={{ color: '#ffffff', fontWeight: 600, fontSize: '0.9rem' }}>Activity Invite</div>
                     <div style={{ color: '#949ba4', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="#949ba4"><path d="M12 3a1 1 0 0 0-1-1h-1.5C8.12 2 7 3.12 7 4.5V6H4a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h.5c.28 0 .5.22.5.5v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8c0-.28.22-.5.5-.5H20a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-3V4.5C17 3.12 15.88 2 14.5 2H13a1 1 0 0 0-1 1v3.5a.5.5 0 0 1-1 0V3Z"/></svg>
-                      <span style={{ color: '#c9cdfb', backgroundColor: 'rgba(88,101,242,0.3)', borderRadius: '3px', padding: '0 2px' }}>@mercy</span>{"'s channel"} in <strong>bore</strong>
+                      <span style={{ color: '#c9cdfb', backgroundColor: 'rgba(88,101,242,0.3)', borderRadius: '3px', padding: '0 2px' }}>@voby</span>{"'s channel"} in <strong>bore</strong>
                     </div>
                   </div>
                 </div>
@@ -251,9 +251,9 @@ export default function VoiceMasterButtons({ children }: { children?: React.Reac
             <div className="discord-embed-content" style={{ flexDirection: 'column', gap: '0.35rem' }}>
               <div className="discord-embed-author" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <img src="/img/bore.webp" alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
-                <span>@mercy</span>
+                <span>@voby</span>
               </div>
-              <div className="discord-embed-title" style={{ color: '#ffffff' }}>@mercy{"'s channel"}</div>
+              <div className="discord-embed-title" style={{ color: '#ffffff' }}>@voby{"'s channel"}</div>
               <div className="vm-embed-info">
                 <div><strong>Owner:</strong> accurs ( <code>604463848526708757</code> )</div>
                 <div><strong>Locked:</strong> <img src="/img/context/denied.webp" alt="no" style={{ width: 18, height: 18, display: 'inline-block', verticalAlign: 'middle' }} /></div>

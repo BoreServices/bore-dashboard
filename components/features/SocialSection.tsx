@@ -49,8 +49,8 @@ export default function SocialSection() {
                   <div className="discord-embed-content">
                     <div className="discord-embed-inner">
                       <div className="discord-embed-author" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <Image src="/img/mercy.png" alt="" width={20} height={20} style={{ borderRadius: '50%', objectFit: 'cover' }} />
-                        <span>mercy</span>
+                        <Image src="/img/voby.png" alt="" width={20} height={20} style={{ borderRadius: '50%', objectFit: 'cover' }} />
+                        <span>voby</span>
                       </div>
                       <div className="discord-embed-title" style={{ color: '#00a8fc' }}>
                         Kendall (@kendalljenner) ✓
