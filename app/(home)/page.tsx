@@ -41,7 +41,9 @@ export default function HomePage() {
       <script
         id="discord:component-embed"
         type="application/json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(discordComponentEmbed) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({ component: discordComponentEmbed }),
+        }}
       />
       <HomeView />
     </>
