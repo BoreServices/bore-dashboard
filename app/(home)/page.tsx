@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import HomeView from '@/components/HomeView'
 
 export const metadata: Metadata = {
-  title: 'Evict',
+  title: 'bore',
   description:
     'The all-in-one solution for seamless server management — powerful, polished, and visually refined.',
 }

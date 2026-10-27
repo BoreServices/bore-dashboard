@@ -34,7 +34,7 @@ export default function UpdatesView({ updates, initialIndex = 0 }: Props) {
         <div className="section-header" style={{ textAlign: 'left', marginBottom: '2.5rem' }} data-reveal>
           <h2 className="section-title">Updates</h2>
           <p className="section-desc" style={{ margin: 0 }}>
-            Latest changelog entries and release notes for Evict.
+            Latest changelog entries and release notes for bore.
           </p>
         </div>
 
