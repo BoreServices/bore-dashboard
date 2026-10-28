@@ -1,7 +1,7 @@
 {
   "servers": {
     "Sentry": {
-      "url": "https://mcp.sentry.dev/mcp/azron/elira",
+      "url": "https://mcp.sentry.dev/mcp/BoreServices/elira",
       "type": "http"
     }
   }

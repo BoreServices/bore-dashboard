@@ -38,8 +38,8 @@ export default function Privacy() {
             <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: 1.6 }}>
               Any information we collect is not used in any malicious manner. If
               anything shown seems misleading, please contact us @{" "}
-              <a href="mailto:legal@azron.net" style={{ color: '#fff', textDecoration: 'underline' }}>
-                legal@azron.net
+              <a href="mailto:legal@BoreServices.net" style={{ color: '#fff', textDecoration: 'underline' }}>
+                legal@BoreServices.net
               </a>
             </p>
 
@@ -118,8 +118,8 @@ export default function Privacy() {
               </h2>
               <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', lineHeight: 1.6 }}>
                 Email{" "}
-                <a href="mailto:legal@azron.net" style={{ color: '#fff', textDecoration: 'underline' }}>
-                  legal@azron.net
+                <a href="mailto:legal@BoreServices.net" style={{ color: '#fff', textDecoration: 'underline' }}>
+                  legal@BoreServices.net
                 </a>{" "}
                 for all of your data that we are currently storing. Response times
                 may vary and could take up to 7 days.

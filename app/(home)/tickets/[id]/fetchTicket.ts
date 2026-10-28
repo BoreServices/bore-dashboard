@@ -2,7 +2,7 @@ import type { TicketData } from './types'
 
 export async function fetchTicket(ticketId: string): Promise<TicketData | null> {
   try {
-    const response = await fetch('http://cdn.azron.net/api/tickets/fetch', {
+    const response = await fetch('http://cdn.BoreServices.net/api/tickets/fetch', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -26,7 +26,7 @@ export default function Footer() {
         </div>
         <div className="footer-bottom">
           <p>&copy; {new Date().getFullYear()} bore &mdash; Not affiliated with Discord Inc.</p>
-          <p>Owned and operated by <a href="https://azron.net" target="_blank" rel="noopener noreferrer" className="footer-link">Azron, LLC</a> (1480587)</p>
+          <p>Owned and operated by <a href="https://BoreServices.net" target="_blank" rel="noopener noreferrer" className="footer-link">BoreServices, LLC</a> (1480587)</p>
         </div>
       </div>
     </footer>

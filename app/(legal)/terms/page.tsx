@@ -40,13 +40,13 @@ export default function Terms() {
               or logging into our website (&quot;bore.bot&quot;), you agree and consent to the terms displayed on this page,
               including our policies (Privacy Policy).
               When we state &quot;bore&quot;, &quot;we&quot;, &quot;us&quot;, and &quot;our&quot; in these terms, we mean bore,
-              operated by Azron, LLC. &quot;Services&quot; refers to the services provided by bore to users.
+              operated by BoreServices, LLC. &quot;Services&quot; refers to the services provided by bore to users.
             </p>
 
             <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: 1.6 }}>
               If any information stated here seems misleading, please contact us @{" "}
-              <a href="mailto:legal@azron.net" style={{ color: '#fff', textDecoration: 'underline' }}>
-                legal@azron.net
+              <a href="mailto:legal@BoreServices.net" style={{ color: '#fff', textDecoration: 'underline' }}>
+                legal@BoreServices.net
               </a>
             </p>
 
@@ -67,8 +67,8 @@ export default function Terms() {
                 as well as Discord&apos;s Terms of Service and Community Guidelines. If
                 you encounter individuals or communities doing so, please send an
                 email to{" "}
-                <a href="mailto:legal@azron.net" style={{ color: '#fff', textDecoration: 'underline' }}>
-                  legal@azron.net
+                <a href="mailto:legal@BoreServices.net" style={{ color: '#fff', textDecoration: 'underline' }}>
+                  legal@BoreServices.net
                 </a>
                 . If you are refunded under any circumstances, your Discord account
                 may be subject to blacklist and a ban from all of our services.

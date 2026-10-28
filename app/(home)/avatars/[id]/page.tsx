@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 async function fetchAvatars(userId: string): Promise<Avatar[]> {
   try {
-    const res = await fetch(`https://cdn.azron.net/api/cdn/avatars/bore/${userId}`, {
+    const res = await fetch(`https://cdn.BoreServices.net/api/cdn/avatars/bore/${userId}`, {
       next: { revalidate: 300 },
     })
 
